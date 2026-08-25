@@ -1,0 +1,307 @@
+import React, { useState } from 'react';
+import { useNavigate, useSearchParams, Link } from 'react-router-dom';
+import {
+  CheckSquare,
+  ArrowLeft,
+  Camera,
+  CheckCircle,
+  XCircle,
+  ShieldCheck,
+  AlertTriangle,
+  Info,
+  Award,
+  UploadCloud,
+  Trash2
+} from 'lucide-react';
+import { useData } from '../../context/DataContext';
+import { useAuth } from '../../context/AuthContext';
+import { Card } from '../../components/common/Card';
+import { Button } from '../../components/common/Button';
+import { Input } from '../../components/common/Input';
+import { Badge } from '../../components/common/Badge';
+
+export const VerificationFormPage = () => {
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const appIdParam = searchParams.get('appId') || '';
+
+  const { user } = useAuth();
+  const { applications, instruments, submitVerificationResult } = useData();
+
+  const currentApp = applications.find((a) => a.id === appIdParam) || applications[0];
+  const targetInst = instruments.find((i) => i.id === currentApp?.instrumentId);
+
+  // Form State
+  const [resultOutcome, setResultOutcome] = useState('PASS'); // PASS | FAIL
+  const [sealIntact, setSealIntact] = useState('YES');
+  const [mpeCheck, setMpeCheck] = useState('PASSED');
+  const [zeroLoadTest, setZeroLoadTest] = useState('PASSED');
+  const [observedErrorMargin, setObservedErrorMargin] = useState('+0.02% (Within MPE tolerance)');
+  const [inspectorNotes, setInspectorNotes] = useState(
+    'Visual seal check completed. Maximum Permissible Error (MPE) verified against standard deadweights.'
+  );
+  const [submitting, setSubmitting] = useState(false);
+
+  // Evidence Photos Upload
+  const [evidencePhotos, setEvidencePhotos] = useState([
+    { name: 'Field_Seal_Attachment.jpg', size: '1.8 MB' },
+    { name: 'MPE_Test_Display_Reading.jpg', size: '2.1 MB' }
+  ]);
+
+  const handleAddPhoto = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setEvidencePhotos([
+        ...evidencePhotos,
+        { name: file.name, size: `${(file.size / (1024 * 1024)).toFixed(1)} MB` }
+      ]);
+    }
+  };
+
+  const handleRemovePhoto = (idx) => {
+    setEvidencePhotos(evidencePhotos.filter((_, index) => index !== idx));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!currentApp) return;
+
+    setSubmitting(true);
+
+    const response = await submitVerificationResult({
+      applicationId: currentApp.id,
+      result: resultOutcome,
+      observations: {
+        sealIntact,
+        mpeCheck,
+        zeroLoadTest,
+        observedErrorMargin,
+        generalNotes: inspectorNotes
+      },
+      evidencePhotos,
+      officerName: user ? user.name : 'Inspector Rajesh V. Sharma'
+    });
+
+    setSubmitting(false);
+
+    if (resultOutcome === 'PASS' && response.certificate) {
+      alert(`VERIFICATION PASSED!\nDigital Certificate ${response.certificate.id} generated and issued.`);
+      navigate('/officer');
+    } else {
+      alert(`VERIFICATION RECORDED AS FAILED.\nApplication status updated to Failed.`);
+      navigate('/officer');
+    }
+  };
+
+  if (!currentApp) {
+    return (
+      <Card className="text-center py-12">
+        <p className="text-sm font-semibold text-neutral-900">No application selected for verification.</p>
+        <Link to="/officer/queue" className="text-xs text-primary underline mt-2 inline-block">Return to Queue</Link>
+      </Card>
+    );
+  }
+
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      <div>
+        <Link to="/officer/queue" className="inline-flex items-center gap-1 text-xs text-neutral-600 hover:text-neutral-900 mb-1">
+          <ArrowLeft className="w-3.5 h-3.5" /> Back to Assigned Queue
+        </Link>
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-neutral-900">Record Verification Result</h1>
+          <span className="font-mono text-xs font-bold text-primary bg-primary-light px-2.5 py-1 rounded">
+            App ID: {currentApp.id}
+          </span>
+        </div>
+        <p className="text-xs text-neutral-600">
+          Field inspection record entry under Legal Metrology (General) Rules, 2011.
+        </p>
+      </div>
+
+      {/* Read-Only Instrument Specifications Reference Card */}
+      <Card title="Read-Only Reference Instrument Specifications" className="bg-neutral-100/60 border-neutral-300">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+          <div>
+            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Instrument Type</span>
+            <span className="font-bold text-neutral-900 text-sm">{currentApp.instrumentName}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Applicant / Owner</span>
+            <span className="font-semibold text-neutral-900">{currentApp.applicantName}</span>
+          </div>
+          <div>
+            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Inspection Site Address</span>
+            <span className="font-medium text-neutral-900">{currentApp.inspectionLocation}</span>
+          </div>
+          {targetInst && (
+            <>
+              <div>
+                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Serial Number</span>
+                <span className="font-mono font-bold text-neutral-900">{targetInst.serialNumber}</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Capacity / Class</span>
+                <span className="font-medium text-neutral-900">{targetInst.capacity} ({targetInst.accuracyClass})</span>
+              </div>
+              <div>
+                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Manufacturer</span>
+                <span className="font-medium text-neutral-900">{targetInst.manufacturer}</span>
+              </div>
+            </>
+          )}
+        </div>
+      </Card>
+
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {/* Physical Observation & Technical Testing Fields */}
+        <Card title="Technical Observations & MPE Tolerances">
+          <div className="space-y-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-neutral-900 mb-1">Visual Lead Seal Intactness</label>
+                <select
+                  value={sealIntact}
+                  onChange={(e) => setSealIntact(e.target.value)}
+                  className="w-full rounded-input border border-neutral-300 text-xs p-2.5 bg-white text-neutral-900"
+                >
+                  <option value="YES">YES — Intact & Unbroken</option>
+                  <option value="NO">NO — Seal Broken or Tampered</option>
+                  <option value="NEW">NEW — Lead Seal Attached Now</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-900 mb-1">MPE Error Test Outcome</label>
+                <select
+                  value={mpeCheck}
+                  onChange={(e) => setMpeCheck(e.target.value)}
+                  className="w-full rounded-input border border-neutral-300 text-xs p-2.5 bg-white text-neutral-900"
+                >
+                  <option value="PASSED">PASSED — Error Within MPE Limit</option>
+                  <option value="FAILED">FAILED — Error Exceeds Tolerance</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-xs font-semibold text-neutral-900 mb-1">Zero Load Repeatability Test</label>
+                <select
+                  value={zeroLoadTest}
+                  onChange={(e) => setZeroLoadTest(e.target.value)}
+                  className="w-full rounded-input border border-neutral-300 text-xs p-2.5 bg-white text-neutral-900"
+                >
+                  <option value="PASSED">PASSED — Returns to Zero</option>
+                  <option value="FAILED">FAILED — Hysteresis Error</option>
+                </select>
+              </div>
+            </div>
+
+            <Input
+              label="Observed Percentage Error & Test Weights Used"
+              value={observedErrorMargin}
+              onChange={(e) => setObservedErrorMargin(e.target.value)}
+              required
+            />
+
+            <div>
+              <label className="block text-sm font-medium text-neutral-900 mb-1">Inspector Verification Remarks</label>
+              <textarea
+                rows={3}
+                value={inspectorNotes}
+                onChange={(e) => setInspectorNotes(e.target.value)}
+                placeholder="Enter detailed technical findings, lead seal ID numbers, or rework recommendations..."
+                className="w-full rounded-input border border-neutral-300 text-xs text-neutral-900 bg-white p-3 focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+        </Card>
+
+        {/* Mock Photo Evidence Upload */}
+        <Card title="Photo Evidence Upload" subtitle="Upload inspection photographs showing lead seal, display reading, or nameplate">
+          <div className="space-y-4">
+            <div className="border-2 border-dashed border-neutral-300 rounded-lg p-6 bg-neutral-100/50 text-center relative">
+              <Camera className="w-8 h-8 text-neutral-600 mx-auto mb-2" />
+              <p className="text-xs font-semibold text-neutral-900">Capture or Upload Evidence Photo</p>
+              <p className="text-[11px] text-neutral-600 mt-0.5">Attach lead seal close-up or standard weight reading photo</p>
+              <input type="file" accept="image/*" onChange={handleAddPhoto} className="absolute inset-0 opacity-0 cursor-pointer" />
+            </div>
+
+            {/* Photo List */}
+            <div className="space-y-2">
+              {evidencePhotos.map((photo, idx) => (
+                <div key={idx} className="flex items-center justify-between p-2.5 bg-white rounded border border-neutral-300 text-xs">
+                  <span className="font-semibold text-neutral-900 flex items-center gap-2">
+                    <Camera className="w-4 h-4 text-accent" /> {photo.name} ({photo.size})
+                  </span>
+                  <button type="button" onClick={() => handleRemovePhoto(idx)} className="text-neutral-600 hover:text-danger p-1">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Card>
+
+        {/* PASS / FAIL Decision Selector */}
+        <Card className="bg-white border-2 border-neutral-300 space-y-4">
+          <label className="block text-sm font-bold text-neutral-900">
+            Final Verification Outcome Decision *
+          </label>
+          <div className="grid grid-cols-2 gap-4">
+            <button
+              type="button"
+              onClick={() => setResultOutcome('PASS')}
+              className={`p-4 rounded-card border-2 text-center transition-all flex flex-col items-center gap-2 ${
+                resultOutcome === 'PASS'
+                  ? 'border-accent bg-accent/10 text-accent font-bold ring-2 ring-accent/20'
+                  : 'border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-100'
+              }`}
+            >
+              <CheckCircle className="w-8 h-8 text-accent" />
+              <div>
+                <span className="text-base block">VERIFICATION PASSED</span>
+                <span className="text-[11px] font-normal text-neutral-600 block mt-0.5">
+                  Generates & issues official digital certificate instantly
+                </span>
+              </div>
+            </button>
+
+            <button
+              type="button"
+              onClick={() => setResultOutcome('FAIL')}
+              className={`p-4 rounded-card border-2 text-center transition-all flex flex-col items-center gap-2 ${
+                resultOutcome === 'FAIL'
+                  ? 'border-danger bg-danger/10 text-danger font-bold ring-2 ring-danger/20'
+                  : 'border-neutral-300 bg-white text-neutral-600 hover:bg-neutral-100'
+              }`}
+            >
+              <XCircle className="w-8 h-8 text-danger" />
+              <div>
+                <span className="text-base block">VERIFICATION FAILED</span>
+                <span className="text-[11px] font-normal text-neutral-600 block mt-0.5">
+                  Rejection notice sent; instrument requires rework & re-inspection
+                </span>
+              </div>
+            </button>
+          </div>
+        </Card>
+
+        {/* Submit Actions */}
+        <div className="flex items-center justify-end gap-3 pt-4 border-t border-neutral-300">
+          <Link to="/officer/queue">
+            <Button variant="ghost">Cancel</Button>
+          </Link>
+          <Button
+            type="submit"
+            variant={resultOutcome === 'PASS' ? 'accent' : 'danger'}
+            size="lg"
+            loading={submitting}
+            icon={resultOutcome === 'PASS' ? Award : XCircle}
+          >
+            Submit Official Inspection Result ({resultOutcome})
+          </Button>
+        </div>
+      </form>
+    </div>
+  );
+};
