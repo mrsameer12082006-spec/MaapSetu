@@ -39,7 +39,7 @@ Existing processes can involve:
 * Difficulty tracking expiry and re-verification
 * Fragmented records and systems
 
-The objective of VeriMaap is to bring these workflows into a unified digital platform.
+The objective of MaapSetu is to bring these workflows into a unified digital platform.
 
 ---
 
