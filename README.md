@@ -1,4 +1,4 @@
-# VeriMaap
+# MaapSetu
 
 ### Digital Verification & Certification Platform for Weighing and Measuring Instruments
 
@@ -9,7 +9,7 @@
 
 ## 📌 About the Project
 
-**VeriMaap** is a secure digital platform designed to streamline and manage the verification and re-verification lifecycle of weighing and measuring instruments under the Legal Metrology framework.
+**MaapSetu** is a secure digital platform designed to streamline and manage the verification and re-verification lifecycle of weighing and measuring instruments under the Legal Metrology framework.
 
 The platform connects **instrument owners, Legal Metrology Departments (LMDs), Legal Metrology Officers (LMOs), and Government Approved Test Centres (GATCs)** through a unified digital workflow.
 
@@ -45,7 +45,7 @@ The objective of VeriMaap is to bring these workflows into a unified digital pla
 
 # 🚀 Our Solution
 
-VeriMaap provides an end-to-end digital workflow:
+MaapSetu provides an end-to-end digital workflow:
 
 ```text
 Instrument Owner
@@ -263,12 +263,12 @@ This allows authorities to monitor verification activities and pending work from
 
 # 🔐 Security & Access Control
 
-VeriMaap follows a role-based approach.
+MaapSetu follows a role-based approach.
 
 Different users have access to different functionalities:
 
 ```text
-                VeriMaap
+                MaapSetu
                    │
        ┌───────────┼───────────┐
        │           │           │
@@ -507,7 +507,7 @@ Show updated verification status and validity.
 
 Our goal is not simply to create another government portal.
 
-The long-term vision of **VeriMaap** is to create a unified digital lifecycle for regulated weighing and measuring instruments:
+The long-term vision of **MaapSetu** is to create a unified digital lifecycle for regulated weighing and measuring instruments:
 
 ```text
 REGISTER
@@ -541,7 +541,7 @@ This creates greater transparency, easier compliance, better record management a
 
 **Team:** Delmora
 
-**Project:** VeriMaap
+**Project:** MaapSetu
 
 ---
 
