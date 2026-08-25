@@ -21,11 +21,16 @@ export const LoginPage = () => {
   const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
   const [signUpPassword, setSignUpPassword] = useState('••••••••••••');
   const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
+
+  // Success Feedback Banners
   const [signUpSuccess, setSignUpSuccess] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
   const handleSubmit = (e) => {
     e.preventDefault();
     setLoading(true);
+    setLoginSuccess(false);
+    setSignUpSuccess(false);
 
     if (isSignUp) {
       // Handle Business Registration Submission
@@ -33,26 +38,24 @@ export const LoginPage = () => {
         setLoading(false);
         setSignUpSuccess(true);
         setTimeout(() => {
-          loginAsRole(USER_ROLES.BUSINESS);
-          navigate('/business');
-        }, 1200);
+          setIsSignUp(false);
+        }, 2000);
       }, 600);
     } else {
       // Handle Portal Sign In Submission
       setTimeout(() => {
         loginAsRole(selectedRole);
         setLoading(false);
-
-        if (selectedRole === USER_ROLES.BUSINESS) navigate('/business');
-        else if (selectedRole === USER_ROLES.LMD_ADMIN) navigate('/lmd');
-        else if (selectedRole === USER_ROLES.OFFICER) navigate('/officer');
-      }, 400);
+        setLoginSuccess(true);
+      }, 500);
     }
   };
 
   const handleRoleSelect = (roleKey) => {
     setSelectedRole(roleKey);
-    setIsSignUp(false); // Reset to sign-in view when changing roles
+    setIsSignUp(false);
+    setLoginSuccess(false);
+    setSignUpSuccess(false);
     if (roleKey === USER_ROLES.BUSINESS) setUsername('v.mehta@apexlogistics.in');
     else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('controller.lmd@maharashtra.gov.in');
     else if (roleKey === USER_ROLES.OFFICER) setUsername('r.sharma@lmd.gov.in');
@@ -142,11 +145,20 @@ export const LoginPage = () => {
           </div>
         )}
 
-        {/* Success Alert Banner */}
+        {/* Success Alert Banners */}
         {signUpSuccess && (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>Account created successfully! Redirecting to Business Portal...</span>
+            <span>Business Account Created Successfully! Switching to Sign In...</span>
+          </div>
+        )}
+
+        {loginSuccess && (
+          <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in">
+            <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+            <span>
+              Login Successful as {selectedRole === USER_ROLES.BUSINESS ? 'Business Owner' : selectedRole === USER_ROLES.LMD_ADMIN ? 'LMD Admin' : 'LMO Officer'}!
+            </span>
           </div>
         )}
 
@@ -240,7 +252,11 @@ export const LoginPage = () => {
               Already have an account?{' '}
               <button
                 type="button"
-                onClick={() => setIsSignUp(false)}
+                onClick={() => {
+                  setIsSignUp(false);
+                  setLoginSuccess(false);
+                  setSignUpSuccess(false);
+                }}
                 className="text-[#00959C] font-bold hover:underline"
               >
                 Sign In
@@ -306,7 +322,11 @@ export const LoginPage = () => {
                   Don't have an account?{' '}
                   <button
                     type="button"
-                    onClick={() => setIsSignUp(true)}
+                    onClick={() => {
+                      setIsSignUp(true);
+                      setLoginSuccess(false);
+                      setSignUpSuccess(false);
+                    }}
                     className="text-[#00959C] font-bold hover:underline"
                   >
                     Sign Up
