@@ -39,7 +39,7 @@ Existing processes can involve:
 * Difficulty tracking expiry and re-verification
 * Fragmented records and systems
 
-The objective of VeriMaap is to bring these workflows into a unified digital platform.
+The objective of MaapSetu is to bring these workflows into a unified digital platform.
 
 ---
 
@@ -140,7 +140,7 @@ The verification officer/test centre can:
 
 # 🤖 AI-Assisted Features
 
-VeriMaap is designed to use AI where it provides practical value rather than adding AI unnecessarily.
+MaapSetu is designed to use AI where it provides practical value rather than adding AI unnecessarily.
 
 ### OCR-Based Instrument Registration
 
@@ -188,7 +188,7 @@ AI acts as **decision support**, not as a replacement for authorized Legal Metro
 
 # 📜 Digital Verification Certificate
 
-After a successful verification, VeriMaap can generate a digital verification certificate containing information such as:
+After a successful verification, MaapSetu can generate a digital verification certificate containing information such as:
 
 * Certificate ID
 * Instrument ID
