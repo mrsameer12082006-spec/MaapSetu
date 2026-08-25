@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   ArrowUpRight,
@@ -23,12 +23,12 @@ import {
   AlertTriangle,
   Clock,
   UserCheck,
-  Check,
-  Play,
-  Pause,
-  RotateCcw,
-  Zap,
-  Activity
+  BookOpen,
+  Eye,
+  Download,
+  Printer,
+  FileCheck,
+  ExternalLink
 } from 'lucide-react';
 import { useData } from '../context/DataContext';
 
@@ -37,22 +37,28 @@ export const ComplexLawHomePage = () => {
   const { certificates } = useData();
 
   // Navigation & UI States
-  const [activeNavDropdown, setActiveNavDropdown] = useState(null);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [activeFaq, setActiveFaq] = useState(0);
 
-  // Dynamic Verification Simulator Animation State (5 Workflow Steps)
-  const [activeStep, setActiveStep] = useState(3);
-  const [isAutoPlay, setIsAutoPlay] = useState(true);
+  // Act & Rules Preview Reader Modal State
+  const [viewingDoc, setViewingDoc] = useState(null);
 
-  // Automatic Step Cycling
-  useEffect(() => {
-    if (!isAutoPlay) return;
-    const interval = setInterval(() => {
-      setActiveStep((prevStep) => (prevStep >= 5 ? 1 : prevStep + 1));
-    }, 3500);
-    return () => clearInterval(interval);
-  }, [isAutoPlay]);
+  // Smooth Scrolling Handler with Sticky Header Offset
+  const handleSmoothScroll = (e, targetId) => {
+    e.preventDefault();
+    setMobileMenuOpen(false);
+    const element = document.getElementById(targetId);
+    if (element) {
+      const headerOffset = 95;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+  };
 
   // Quick Verification Widget State
   const [searchCertId, setSearchCertId] = useState('CERT-2026-8891');
@@ -95,43 +101,119 @@ export const ComplexLawHomePage = () => {
     }
   };
 
-  const workflowSteps = [
+  const actAndRulesList = [
     {
-      step: 1,
-      title: 'Business Applies Online',
-      desc: 'Owner submits calibration & plate specs via AI OCR photo scanner',
-      position: { left: '16%', top: '48%' },
-      badge: 'Step 1: Registration'
+      id: 'act-2009',
+      title: 'Legal Metrology Act, 2009',
+      desc: 'Central Act regulating weights, measures & commercial instruments across India',
+      docType: 'Official Government Act (Act No. 1 of 2010)',
+      enactmentDate: '14th January, 2010',
+      sections: [
+        {
+          num: 'Section 15',
+          title: 'Power of Inspection, Seizure & Forfeiture',
+          text: 'Any Legal Metrology Officer may, at all reasonable times, enter any place where weights or measures are manufactured, repaired, or used in commercial transactions to inspect and test compliance.'
+        },
+        {
+          num: 'Section 24',
+          title: 'Mandatory Verification and Stamping',
+          text: 'Every person having any weight or measure in possession, custody or control in trade shall get such weight or measure verified and stamped before putting it into use, and at prescribed 12-month re-verification intervals.'
+        },
+        {
+          num: 'Section 33',
+          title: 'Penalty for Use of Unverified Weights or Measures',
+          text: 'Whoever uses any unverified weight or measure in any transaction or industrial measurement shall be punished with fine up to ₹25,000, and for a second offense, imprisonment up to one year.'
+        }
+      ]
     },
     {
-      step: 2,
-      title: 'LMD Reviews & Assigns',
-      desc: 'Department verifies documents and dispatches authorized LMO inspector',
-      position: { left: '34%', top: '38%' },
-      badge: 'Step 2: LMD Review'
+      id: 'rules-2011',
+      title: 'Legal Metrology (General) Rules, 2011',
+      desc: 'Mandatory verification specifications, Maximum Permissible Error (MPE) tolerances & testing standards',
+      docType: 'Ministry Statutory Rules (GSR 71(E))',
+      enactmentDate: '1st April, 2011',
+      sections: [
+        {
+          num: 'Rule 3',
+          title: 'Accuracy Classes of Weighing Instruments',
+          text: 'Establishes technical standards for Special Accuracy (Class I), High Accuracy (Class II), Medium Accuracy (Class III), and Ordinary Accuracy (Class IV) weighing scales.'
+        },
+        {
+          num: 'Rule 11',
+          title: 'Maximum Permissible Error (MPE)',
+          text: 'Defines maximum allowable error limits during initial verification and in-service inspections for weighbridges, retail counter scales, petrol pump meters, and flowmeters.'
+        },
+        {
+          num: 'Rule 18',
+          title: 'Provisions for Lead Sealing & Digital QR Stamps',
+          text: 'Mandates tamper-proof lead sealing on adjustment mechanisms and affixing of cryptographically signed digital QR verification certificates.'
+        }
+      ]
     },
     {
-      step: 3,
-      title: 'Field Inspection Active',
-      desc: 'LMO Officer checks visual seals, zero load, and MPE error bounds on-site',
-      position: { left: '50%', top: '42%' },
-      badge: 'Step 3: Field Verification'
-    },
-    {
-      step: 4,
-      title: 'Digital Certificate Issued',
-      desc: 'System generates tamper-proof certificate with cryptographically signed seal',
-      position: { left: '68%', top: '32%' },
-      badge: 'Step 4: Certification'
-    },
-    {
-      step: 5,
-      title: 'Public QR Verification',
-      desc: 'Smartphone scan validates authenticity against national registry in real-time',
-      position: { left: '86%', top: '44%' },
-      badge: 'Step 5: QR Validation'
+      id: 'state-rules',
+      title: 'State Legal Metrology Rules',
+      desc: 'Statewise enforcement regulations, licensing procedures & verification fee schedules',
+      docType: 'State Legal Metrology Department Gazette',
+      enactmentDate: 'State Specific Guidelines',
+      sections: [
+        {
+          num: 'Rule 5',
+          title: 'Licensing of Manufacturers, Dealers & Repairers',
+          text: 'Regulates mandatory state licensing for commercial dealers, manufacturers, and repairers of weighing and measuring instruments.'
+        },
+        {
+          num: 'Rule 9',
+          title: 'Verification Fee & Stamping Charge Schedules',
+          text: 'Prescribes official government fee rates for field inspection, verification, and stamping based on instrument capacity (e.g. Weighbridge up to 100t, Fuel Dispenser nozzles).'
+        },
+        {
+          num: 'Rule 16',
+          title: 'Appeals, Compounding & Inspection Roster',
+          text: 'Outlines procedures for departmental appeals against inspection rejection, compounding of offenses, and assignment of Government Approved Test Centres (GATC).'
+        }
+      ]
     }
   ];
+
+  // Local Download Handler
+  const handleDownloadDoc = (e, doc) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    let textContent = `====================================================================
+${doc.title.toUpperCase()}
+${doc.docType.toUpperCase()}
+MINISTRY OF CONSUMER AFFAIRS, FOOD & PUBLIC DISTRIBUTION
+GOVERNMENT OF INDIA
+====================================================================
+
+Enactment Date: ${doc.enactmentDate}
+Description: ${doc.desc}
+
+KEY SECTIONS & STATUTORY PROVISIONS:
+
+`;
+
+    doc.sections.forEach((sec) => {
+      textContent += `[ ${sec.num} - ${sec.title} ]\n${sec.text}\n\n`;
+    });
+
+    textContent += `--------------------------------------------------------------------
+Verified & Certified by MaapSetu Legal Metrology Platform (SIH 26036)
+Central Registry Reference: ${doc.id}
+--------------------------------------------------------------------`;
+
+    const blob = new Blob([textContent], { type: 'text/plain;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `${doc.title.replace(/[^a-zA-Z0-9]/g, '_')}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
 
   const faqs = [
     {
@@ -158,7 +240,7 @@ export const ComplexLawHomePage = () => {
 
   return (
     <div className="w-full bg-[#FDF9F6] text-[#003943] font-sans antialiased min-h-screen selection:bg-[#02B7BF] selection:text-white overflow-x-hidden">
-      {/* 1. MAIN NAVIGATION BAR (ENLARGED PROMINENT SIZE) */}
+      {/* 1. MAIN NAVIGATION BAR */}
       <header className="w-full sticky top-0 z-50 bg-[#FDF9F6]/95 backdrop-blur-md border-b border-[#003943]/10 px-6 sm:px-12 lg:px-20 py-6 sm:py-7 shadow-sm">
         <div className="w-full flex items-center justify-between gap-6">
           {/* Brand Logo */}
@@ -173,7 +255,7 @@ export const ComplexLawHomePage = () => {
           </Link>
 
           {/* Desktop Nav Links */}
-          <nav className="hidden lg:flex items-center gap-10 xl:gap-12 text-base sm:text-lg font-bold text-[#003943]">
+          <nav className="hidden lg:flex items-center gap-8 xl:gap-10 text-base sm:text-lg font-bold text-[#003943]">
             {/* User Portals Dropdown */}
             <div className="relative group">
               <button
@@ -211,19 +293,86 @@ export const ComplexLawHomePage = () => {
               </div>
             </div>
 
-            <Link to="/verify/CERT-2026-8891" className="hover:text-[#00959C] font-extrabold transition-colors text-[#00959C]">
-              Verify QR Certificate
-            </Link>
+            {/* ACT & RULES HOVER DROPDOWN (NAVBAR) */}
+            <div className="relative group">
+              <button
+                type="button"
+                className="flex items-center gap-1.5 hover:text-[#00959C] transition-colors py-2 font-extrabold text-[#003943]"
+              >
+                <BookOpen className="w-5 h-5 text-[#00959C]" />
+                <span>Act & Rules</span>
+                <ChevronDown className="w-4 h-4 text-[#003943]/70 group-hover:text-[#00959C] transition-transform group-hover:rotate-180" />
+              </button>
 
-            <a href="#services" className="hover:text-[#00959C] transition-colors font-bold">
+              {/* Act & Rules Hover Popover Menu */}
+              <div className="absolute top-full right-0 lg:-left-24 w-[420px] bg-[#FDF9F6] border border-[#003943]/20 rounded-2xl shadow-2xl p-5 hidden group-hover:block z-50 animate-in fade-in duration-150 space-y-4">
+                <div className="pb-3 border-b border-[#003943]/10 flex items-center justify-between">
+                  <span className="text-xs font-extrabold uppercase tracking-wider text-[#00959C] flex items-center gap-1.5">
+                    <BookOpen className="w-4 h-4" /> Official Legal Framework
+                  </span>
+                  <span className="text-[10px] bg-[#003943]/10 text-[#003943] px-2 py-0.5 rounded font-mono font-bold">GOVT GAZETTE</span>
+                </div>
+
+                <div className="space-y-4">
+                  {actAndRulesList.map((doc) => (
+                    <div key={doc.id} className="p-3.5 bg-white rounded-xl border border-[#003943]/10 space-y-2 hover:border-[#00959C]/40 transition-colors">
+                      <div>
+                        <h4 className="font-serif font-bold text-[#003943] text-sm sm:text-base leading-snug">{doc.title}</h4>
+                        <p className="text-xs text-[#003943]/70 leading-relaxed mt-0.5">{doc.desc}</p>
+                      </div>
+                      <div className="flex items-center justify-end gap-2 pt-1 border-t border-[#003943]/5">
+                        <button
+                          type="button"
+                          onClick={() => setViewingDoc(doc)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#E0F5F6] text-[#003943] font-bold text-xs hover:bg-[#00959C] hover:text-white transition-colors"
+                        >
+                          <Eye className="w-3.5 h-3.5" />
+                          <span>View</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={(e) => handleDownloadDoc(e, doc)}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors"
+                        >
+                          <Download className="w-3.5 h-3.5 text-[#02B7BF]" />
+                          <span>Download</span>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <a
+              href="#verify-widget"
+              onClick={(e) => handleSmoothScroll(e, 'verify-widget')}
+              className="hover:text-[#00959C] font-extrabold transition-colors text-[#00959C]"
+            >
+              Verify QR Certificate
+            </a>
+
+            <a
+              href="#services"
+              onClick={(e) => handleSmoothScroll(e, 'services')}
+              className="hover:text-[#00959C] transition-colors font-bold"
+            >
               Core Modules
             </a>
 
-            <a href="#rules" className="hover:text-[#00959C] transition-colors font-bold">
+            <a
+              href="#rules"
+              onClick={(e) => handleSmoothScroll(e, 'rules')}
+              className="hover:text-[#00959C] transition-colors font-bold"
+            >
               Rules & Compliance
             </a>
 
-            <a href="#faq" className="hover:text-[#00959C] transition-colors font-bold">
+            <a
+              href="#faq"
+              onClick={(e) => handleSmoothScroll(e, 'faq')}
+              className="hover:text-[#00959C] transition-colors font-bold"
+            >
               FAQ
             </a>
           </nav>
@@ -258,14 +407,49 @@ export const ComplexLawHomePage = () => {
             <Link to="/login?role=business" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-bold text-[#00959C] py-2 border-b border-[#003943]/10">Business Owner Portal</Link>
             <Link to="/login?role=lmd" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-bold text-[#003943] py-2 border-b border-[#003943]/10">LMD Administrator Portal</Link>
             <Link to="/login?role=officer" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-bold text-[#003943] py-2 border-b border-[#003943]/10">LMO / GATC Officer Queue</Link>
-            <Link to="/verify/CERT-2026-8891" onClick={() => setMobileMenuOpen(false)} className="block text-lg font-bold text-[#00959C] py-2">Public QR Verification</Link>
+            
+            {/* Act & Rules Mobile Accordion */}
+            <div className="py-2 border-b border-[#003943]/10 space-y-3">
+              <span className="block text-lg font-bold text-[#003943]">Act & Rules</span>
+              <div className="space-y-2 pl-2">
+                {actAndRulesList.map((doc) => (
+                  <div key={doc.id} className="p-3 bg-white rounded-xl border border-[#003943]/10 space-y-1.5">
+                    <p className="font-bold text-xs text-[#003943]">{doc.title}</p>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setMobileMenuOpen(false);
+                          setViewingDoc(doc);
+                        }}
+                        className="px-2.5 py-1 bg-[#E0F5F6] text-[#003943] font-bold text-[11px] rounded"
+                      >
+                        View
+                      </button>
+                      <button
+                        type="button"
+                        onClick={(e) => handleDownloadDoc(e, doc)}
+                        className="px-2.5 py-1 bg-[#003943] text-white font-bold text-[11px] rounded"
+                      >
+                        Download
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <a href="#verify-widget" onClick={(e) => handleSmoothScroll(e, 'verify-widget')} className="block text-lg font-bold text-[#00959C] py-2 border-b border-[#003943]/10">Public QR Verification</a>
+            <a href="#services" onClick={(e) => handleSmoothScroll(e, 'services')} className="block text-lg font-bold text-[#003943] py-2 border-b border-[#003943]/10">Core Modules</a>
+            <a href="#rules" onClick={(e) => handleSmoothScroll(e, 'rules')} className="block text-lg font-bold text-[#003943] py-2 border-b border-[#003943]/10">Rules & Compliance</a>
+            <a href="#faq" onClick={(e) => handleSmoothScroll(e, 'faq')} className="block text-lg font-bold text-[#003943] py-2">FAQ</a>
           </div>
         )}
       </header>
 
       {/* 2. HERO SECTION */}
-      <section className="w-full pt-12 pb-24 px-4 sm:px-8 lg:px-16 xl:px-24 bg-[#FDF9F6] relative overflow-hidden">
-        <div className="w-full max-w-5xl mx-auto text-center space-y-6 relative z-10">
+      <section className="w-full pt-12 pb-24 px-6 sm:px-12 lg:px-20 2xl:px-24 bg-[#FDF9F6] relative overflow-hidden">
+        <div className="w-full max-w-6xl mx-auto text-center space-y-6 relative z-10">
           {/* Main Hero Headline */}
           <div className="space-y-4">
             <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl font-serif font-bold text-[#003943] tracking-tight leading-[1.08]">
@@ -280,8 +464,8 @@ export const ComplexLawHomePage = () => {
           </div>
 
           {/* Subtitle */}
-          <p className="max-w-3xl mx-auto text-base sm:text-xl text-[#003943]/85 leading-relaxed font-normal">
-            Streamlining India's Legal Metrology verification lifecycle. Watch the animated LMO Officer conduct live field testing, record lead seals, and issue QR-stamped digital certificates in real time.
+          <p className="max-w-4xl mx-auto text-base sm:text-xl text-[#003943]/85 leading-relaxed font-normal">
+            Streamlining India's Legal Metrology verification lifecycle for weighing and measuring instruments. Connect instrument owners, LMD administrators, and verification officers seamlessly.
           </p>
 
           {/* CTA Buttons */}
@@ -306,120 +490,14 @@ export const ComplexLawHomePage = () => {
           </div>
         </div>
 
-        {/* HIGH-RES ISOMETRIC DYNAMIC ANIMATED WORKFLOW CONTAINER */}
-        <div className="w-full max-w-[1400px] mx-auto mt-12 px-2 sm:px-4 relative">
-          <div className="w-full bg-white rounded-3xl p-4 sm:p-8 shadow-xl border border-[#003943]/15 relative overflow-hidden backdrop-blur-xs">
-            {/* Interactive Control & Step Selector Bar */}
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 pb-4 mb-4 border-b border-[#003943]/10">
-              <div className="flex items-center gap-3">
-                <div className="w-9 h-9 rounded-xl bg-[#00959C] text-white flex items-center justify-center font-bold">
-                  <Activity className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Interactive Field Inspection Simulator</h4>
-                  <p className="text-xs text-[#003943]/70">Step {activeStep} of 5: {workflowSteps[activeStep - 1].title}</p>
-                </div>
-              </div>
-
-              {/* Step Buttons & Play/Pause Controls */}
-              <div className="flex items-center gap-2">
-                <div className="hidden md:flex items-center bg-[#E0F5F6] p-1 rounded-full border border-[#00959C]/20 text-xs">
-                  {workflowSteps.map((s) => (
-                    <button
-                      key={s.step}
-                      type="button"
-                      onClick={() => {
-                        setActiveStep(s.step);
-                        setIsAutoPlay(false);
-                      }}
-                      className={`px-3 py-1 rounded-full font-bold transition-all ${
-                        activeStep === s.step ? 'bg-[#00959C] text-white shadow-xs' : 'text-[#003943] hover:text-[#00959C]'
-                      }`}
-                    >
-                      Step {s.step}
-                    </button>
-                  ))}
-                </div>
-
-                <button
-                  type="button"
-                  onClick={() => setIsAutoPlay(!isAutoPlay)}
-                  className="px-3.5 py-1.5 rounded-full bg-[#003943] text-white text-xs font-semibold flex items-center gap-1.5 hover:bg-[#002B33] transition-colors"
-                >
-                  {isAutoPlay ? <Pause className="w-3.5 h-3.5 text-amber-300" /> : <Play className="w-3.5 h-3.5 text-emerald-300" />}
-                  <span>{isAutoPlay ? 'Pause Motion' : 'Auto Play'}</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Main Isometric Image Wrapper */}
-            <div className="relative w-full overflow-hidden rounded-2xl border border-[#003943]/10 bg-[#F4F8F9] group">
-              <img
-                src="/maapsetu_hero_workflow.png"
-                alt="MaapSetu End-to-End Legal Metrology Verification Workflow"
-                className="w-full h-auto object-cover rounded-2xl shadow-inner transition-transform duration-700 group-hover:scale-[1.01]"
-              />
-
-              {/* DYNAMIC MOVING PERSON / INSPECTOR AVATAR OVERLAY */}
-              <div
-                className="absolute transition-all duration-1000 ease-in-out z-30 pointer-events-none transform -translate-x-1/2 -translate-y-1/2"
-                style={{
-                  left: workflowSteps[activeStep - 1].position.left,
-                  top: workflowSteps[activeStep - 1].position.top
-                }}
-              >
-                <div className="relative flex flex-col items-center">
-                  <div className="mb-2 bg-[#003943] text-white px-3 py-1.5 rounded-xl shadow-xl border border-[#02B7BF] text-[11px] font-bold tracking-tight whitespace-nowrap flex items-center gap-1.5 animate-bounce">
-                    <UserCheck className="w-3.5 h-3.5 text-[#02B7BF]" />
-                    <span>LMO Officer: {workflowSteps[activeStep - 1].title}</span>
-                  </div>
-
-                  <div className="relative">
-                    <div className="w-10 h-10 rounded-full bg-[#02B7BF] border-2 border-white text-white flex items-center justify-center font-bold shadow-lg animate-pulse-ring">
-                      <Scale className="w-5 h-5 text-white" />
-                    </div>
-                    <div className="w-3 h-3 bg-amber-400 rounded-full mx-auto mt-1 animate-ping" />
-                  </div>
-                </div>
-              </div>
-
-              {/* STEP 5 MOBILE QR LASER SCANNING EFFECT OVERLAY */}
-              {activeStep === 5 && (
-                <div className="absolute right-[8%] bottom-[18%] w-[12%] h-[35%] border-2 border-dashed border-emerald-400 rounded-2xl bg-emerald-400/10 backdrop-blur-xs z-20 pointer-events-none overflow-hidden animate-in fade-in">
-                  <div className="w-full h-1 bg-emerald-400 shadow-[0_0_15px_#10B981] absolute animate-laser" />
-                  <div className="p-2 text-center">
-                    <span className="bg-emerald-700 text-white text-[9px] font-mono font-bold px-1.5 py-0.5 rounded">
-                      QR VERIFIED
-                    </span>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 3 FIELD INSPECTION DIGITIAL SCALE READOUT OVERLAY */}
-              {activeStep === 3 && (
-                <div className="absolute left-[48%] top-[38%] bg-[#003943] text-emerald-400 font-mono text-xs font-bold px-2 py-1 rounded border border-emerald-400 shadow-lg z-20 animate-pulse">
-                  MPE: 0.00kg (PASSED)
-                </div>
-              )}
-            </div>
-
-            {/* Step Description Bar below image */}
-            <div className="mt-4 p-4 bg-[#E0F5F6]/60 rounded-xl border border-[#00959C]/20 flex flex-col sm:flex-row items-center justify-between gap-3 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 rounded-full bg-[#003943] text-white font-bold text-[10px]">
-                  {workflowSteps[activeStep - 1].badge}
-                </span>
-                <span className="font-bold text-[#003943] text-sm">
-                  {workflowSteps[activeStep - 1].desc}
-                </span>
-              </div>
-              <Link
-                to="/login?role=business"
-                className="text-[#00959C] font-bold hover:underline flex items-center gap-1 shrink-0"
-              >
-                Execute Step in Portal <ArrowRight className="w-3.5 h-3.5" />
-              </Link>
-            </div>
+        {/* HIGH-RES ISOMETRIC WORKFLOW IMAGE CONTAINER (STATIC CLEAN IMAGE) */}
+        <div className="w-full max-w-[1500px] mx-auto mt-12 px-2 sm:px-4 relative">
+          <div className="w-full bg-white rounded-3xl p-4 sm:p-8 shadow-xl border border-[#003943]/15 relative overflow-hidden">
+            <img
+              src="/maapsetu_hero_workflow.png"
+              alt="MaapSetu End-to-End Legal Metrology Verification Workflow"
+              className="w-full h-auto object-cover rounded-2xl shadow-sm"
+            />
           </div>
         </div>
       </section>
@@ -442,8 +520,8 @@ export const ComplexLawHomePage = () => {
       </section>
 
       {/* 5. SERVICES SECTION */}
-      <section id="services" className="w-full py-24 px-4 sm:px-8 lg:px-16 2xl:px-24 space-y-14">
-        <div className="text-center space-y-3 max-w-4xl mx-auto">
+      <section id="services" className="w-full py-24 px-6 sm:px-12 lg:px-20 2xl:px-24 space-y-14">
+        <div className="text-center space-y-3 max-w-5xl mx-auto">
           <h2 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#003943]">
             Verification workflows <em className="italic text-[#00959C]">tailored to your role</em>
           </h2>
@@ -511,7 +589,7 @@ export const ComplexLawHomePage = () => {
       </section>
 
       {/* 6. OUR PROMISE SECTION */}
-      <section className="w-full py-20 px-4 sm:px-8 lg:px-16 2xl:px-24 bg-white border-y border-[#003943]/10">
+      <section id="rules" className="w-full py-20 px-6 sm:px-12 lg:px-20 2xl:px-24 bg-white border-y border-[#003943]/10">
         <div className="w-full grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
           <div className="space-y-6">
             <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#E0F5F6] text-[#00959C] text-xs font-bold uppercase tracking-wider">
@@ -535,7 +613,7 @@ export const ComplexLawHomePage = () => {
             <div className="p-6 bg-[#FDF9F6] rounded-2xl border border-[#003943]/10 space-y-2 hover:border-[#00959C] transition-colors">
               <QrCode className="w-7 h-7 text-[#00959C]" />
               <h4 className="font-bold text-[#003943] text-lg">Tamper-Proof QR Stamps</h4>
-              <p className="text-xs sm:text-sm text-[#003943]/70">Cryptographically verifiable digital certificates with instant QR lookup.</p>
+              <p className="text-xs sm:text-sm text-[#003943]/70">Verifiable digital certificates with instant QR lookup.</p>
             </div>
 
             <div className="p-6 bg-[#FDF9F6] rounded-2xl border border-[#003943]/10 space-y-2 hover:border-[#00959C] transition-colors">
@@ -554,7 +632,7 @@ export const ComplexLawHomePage = () => {
       </section>
 
       {/* 7. SPOTLIGHT: PUBLIC CERTIFICATE VERIFICATION SEARCH WIDGET */}
-      <section id="verify-widget" className="w-full py-20 px-4 sm:px-8 lg:px-16 2xl:px-24">
+      <section id="verify-widget" className="w-full py-20 px-6 sm:px-12 lg:px-20 2xl:px-24">
         <div className="w-full bg-[#003943] text-white rounded-3xl p-8 sm:p-14 shadow-2xl border border-[#00959C]/40 relative overflow-hidden">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center relative z-10">
             <div className="lg:col-span-7 space-y-6">
@@ -627,7 +705,7 @@ export const ComplexLawHomePage = () => {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-full bg-[#00959C] hover:bg-[#003943] text-white font-semibold text-sm transition-colors shadow-md flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-full bg-[#00959C] hover:bg-[#003943] text-[#FDF9F6] font-semibold text-sm transition-colors shadow-md flex items-center justify-center gap-2"
                 >
                   <Search className="w-4 h-4" />
                   <span>Verify Full Certificate Record</span>
@@ -639,8 +717,8 @@ export const ComplexLawHomePage = () => {
       </section>
 
       {/* 8. FAQ ACCORDION SECTION */}
-      <section id="faq" className="w-full py-24 px-4 sm:px-8 lg:px-16 2xl:px-24 bg-white border-t border-[#003943]/10">
-        <div className="max-w-5xl mx-auto space-y-10">
+      <section id="faq" className="w-full py-24 px-6 sm:px-12 lg:px-20 2xl:px-24 bg-white border-t border-[#003943]/10">
+        <div className="w-full space-y-10">
           <div className="text-center space-y-3">
             <h2 className="text-4xl sm:text-5xl lg:text-6xl font-serif font-bold text-[#003943]">
               Frequently Asked Questions
@@ -650,13 +728,13 @@ export const ComplexLawHomePage = () => {
             </p>
           </div>
 
-          <div className="space-y-4">
+          <div className="w-full space-y-4">
             {faqs.map((faq, idx) => {
               const isOpen = activeFaq === idx;
               return (
                 <div
                   key={idx}
-                  className={`border rounded-2xl overflow-hidden transition-all duration-300 shadow-xs ${
+                  className={`w-full border rounded-2xl overflow-hidden transition-all duration-300 shadow-xs ${
                     isOpen
                       ? 'border-[#00959C] bg-[#FDF9F6] shadow-md ring-1 ring-[#00959C]/30'
                       : 'border-[#003943]/15 bg-white hover:border-[#00959C]/40 hover:bg-[#FDF9F6]/50'
@@ -698,15 +776,16 @@ export const ComplexLawHomePage = () => {
 
       {/* 9. FOOTER CTA BANNER */}
       <footer id="contact" className="w-full bg-[#002B33] text-[#E0F5F6] py-16">
-        <div className="w-full px-4 sm:px-8 lg:px-16 2xl:px-24">
-          <div className="w-full bg-[#003943] p-8 sm:p-14 rounded-3xl border border-[#00959C]/40 text-center space-y-6 shadow-2xl">
+        <div className="w-full px-6 sm:px-12 lg:px-20 2xl:px-24">
+          <div className="w-full bg-[#003943] p-8 sm:p-14 rounded-3xl border border-[#00959C]/40 text-center space-y-6 shadow-2xl relative">
             <h2 className="text-3xl sm:text-5xl lg:text-6xl font-serif font-bold text-white">
               Digitizing trust in <em className="italic text-[#02B7BF]">every measurement</em>
             </h2>
             <p className="text-sm sm:text-base text-[#E0F5F6]/80 max-w-xl mx-auto">
               Start your instrument verification application online or sign in to your departmental portal.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-4 pt-2">
+
+            <div className="flex flex-wrap items-center justify-center gap-4 pt-2 relative z-20">
               <Link
                 to="/login?role=business"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-[#02B7BF] hover:bg-white text-[#003943] font-bold text-base transition-colors shadow-lg"
@@ -714,6 +793,7 @@ export const ComplexLawHomePage = () => {
                 <span>Business Owner Login</span>
                 <ArrowUpRight className="w-5 h-5" />
               </Link>
+
               <Link
                 to="/login?role=lmd"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 font-bold text-base transition-colors"
@@ -725,6 +805,94 @@ export const ComplexLawHomePage = () => {
           </div>
         </div>
       </footer>
+
+      {/* 10. IN-APP LEGAL METROLOGY ACT & RULES VIEWER MODAL */}
+      {viewingDoc && (
+        <div className="fixed inset-0 z-50 bg-[#003943]/80 backdrop-blur-md flex items-center justify-center p-4 sm:p-6 animate-in fade-in duration-200">
+          <div className="w-full max-w-4xl bg-[#FDF9F6] text-[#003943] rounded-3xl shadow-2xl border border-[#00959C]/40 max-h-[90vh] flex flex-col overflow-hidden">
+            {/* Modal Header */}
+            <div className="p-6 bg-[#003943] text-white flex items-center justify-between border-b border-[#00959C]/30 shrink-0">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-[#02B7BF] text-[#003943] flex items-center justify-center font-bold">
+                  <FileCheck className="w-6 h-6" />
+                </div>
+                <div>
+                  <h3 className="text-xl sm:text-2xl font-serif font-bold text-white leading-snug">
+                    {viewingDoc.title}
+                  </h3>
+                  <p className="text-xs text-[#E0F5F6]/80 flex items-center gap-2">
+                    <span>{viewingDoc.docType}</span> • <span>Enactment: {viewingDoc.enactmentDate}</span>
+                  </p>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setViewingDoc(null)}
+                className="p-2 rounded-xl text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                aria-label="Close Viewer"
+              >
+                <X className="w-6 h-6" />
+              </button>
+            </div>
+
+            {/* Modal Body / Legal Text Content */}
+            <div className="p-6 sm:p-8 overflow-y-auto space-y-6 flex-1 text-sm sm:text-base leading-relaxed">
+              <div className="p-4 bg-[#E0F5F6] border border-[#00959C]/30 rounded-2xl flex items-start gap-3">
+                <ShieldCheck className="w-6 h-6 text-[#00959C] shrink-0 mt-0.5" />
+                <div>
+                  <h4 className="font-bold text-[#003943] text-sm">Official Legal Metrology Department Reference</h4>
+                  <p className="text-xs text-[#003943]/80 mt-0.5">{viewingDoc.desc}</p>
+                </div>
+              </div>
+
+              <div className="space-y-6">
+                <h4 className="text-lg font-serif font-bold text-[#003943] border-b border-[#003943]/10 pb-2">
+                  Statutory Provisions & Key Rules
+                </h4>
+
+                {viewingDoc.sections.map((sec, idx) => (
+                  <div key={idx} className="p-5 bg-white rounded-2xl border border-[#003943]/15 space-y-2 shadow-xs">
+                    <div className="flex items-center justify-between">
+                      <span className="px-2.5 py-1 rounded bg-[#003943] text-white text-xs font-mono font-bold">
+                        {sec.num}
+                      </span>
+                      <span className="text-xs font-semibold text-[#00959C]">Govt Certified Standard</span>
+                    </div>
+                    <h5 className="font-bold text-[#003943] text-base sm:text-lg">{sec.title}</h5>
+                    <p className="text-xs sm:text-sm text-[#003943]/80 leading-relaxed">{sec.text}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Modal Footer Controls */}
+            <div className="p-5 bg-[#F4F8F9] border-t border-[#003943]/10 flex flex-wrap items-center justify-between gap-4 shrink-0">
+              <span className="text-xs text-[#003943]/60 font-mono">
+                MaapSetu Digital Registry • Ref #{viewingDoc.id}
+              </span>
+
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={(e) => handleDownloadDoc(e, viewingDoc)}
+                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors"
+                >
+                  <Download className="w-4 h-4 text-[#02B7BF]" />
+                  <span>Download File</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewingDoc(null)}
+                  className="px-5 py-2.5 rounded-xl bg-gray-200 text-[#003943] font-bold text-xs hover:bg-gray-300 transition-colors"
+                >
+                  Close Reader
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
