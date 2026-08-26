@@ -241,7 +241,7 @@ Central Registry Reference: ${doc.id}
   return (
     <div className="w-full bg-[#FDF9F6] text-[#003943] font-sans antialiased min-h-screen selection:bg-[#02B7BF] selection:text-white overflow-x-hidden">
       {/* 1. MAIN NAVIGATION BAR */}
-      <header className="w-full sticky top-0 z-50 bg-[#FDF9F6]/95 backdrop-blur-md border-b border-[#003943]/10 px-6 sm:px-12 lg:px-20 py-6 sm:py-7 shadow-sm">
+      <header className="w-full relative z-40 bg-[#FDF9F6] border-b border-[#003943]/10 px-6 sm:px-12 lg:px-20 py-6 sm:py-7 shadow-sm">
         <div className="w-full flex items-center justify-between gap-6">
           {/* Brand Logo */}
           <Link to="/" className="flex items-center gap-3.5 group shrink-0">

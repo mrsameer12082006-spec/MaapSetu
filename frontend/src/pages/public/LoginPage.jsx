@@ -48,9 +48,11 @@ export const LoginPage = () => {
         loginAsRole(selectedRole);
         setLoading(false);
         setLoginSuccess(true);
-        setTimeout(() => {
-          navigate('/business');
-        }, 600);
+        if (selectedRole === USER_ROLES.BUSINESS) {
+          setTimeout(() => {
+            navigate('/business');
+          }, 800);
+        }
       }, 400);
     }
   };

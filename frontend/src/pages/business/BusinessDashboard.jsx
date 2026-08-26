@@ -44,19 +44,9 @@ export const BusinessDashboard = () => {
         onClick={() => navigate('/business/register')}
         className="w-full bg-[#003943] hover:bg-[#002B33] text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-[#00959C]/30 flex items-center justify-between cursor-pointer transition-all duration-200 group"
       >
-        <div className="flex items-center gap-4 sm:gap-5">
-          <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-[#00959C]/25 text-[#02B7BF] flex items-center justify-center shrink-0 border border-[#02B7BF]/30 group-hover:scale-105 transition-transform">
-            <Camera className="w-6 h-6 sm:w-7 sm:h-7 text-[#02B7BF]" />
-          </div>
-          <div className="space-y-1">
-            <h3 className="font-serif font-bold text-lg sm:text-xl text-white">
-              Register a new instrument
-            </h3>
-            <p className="text-xs sm:text-sm text-[#E0F5F6]/85 font-normal">
-              Upload a photo of the plate — we'll fill in the details
-            </p>
-          </div>
-        </div>
+        <h3 className="font-serif font-bold text-lg sm:text-xl text-white">
+          Register a new instrument
+        </h3>
         <ArrowRight className="w-6 h-6 text-white group-hover:translate-x-1.5 transition-transform shrink-0 ml-4" />
       </div>
 

@@ -10,8 +10,9 @@ import { ComplexLawHomePage } from './pages/ComplexLawHomePage';
 // Public Login & Sign Up Page
 import { LoginPage } from './pages/public/LoginPage';
 
-// Business Owner Dashboard Page
+// Business Owner Pages
 import { BusinessDashboard } from './pages/business/BusinessDashboard';
+import { RegisterInstrumentPage } from './pages/business/RegisterInstrumentPage';
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
               <Route path="login" element={<LoginPage />} />
               <Route path="business" element={<BusinessDashboard />} />
               <Route path="business/dashboard" element={<BusinessDashboard />} />
+              <Route path="business/register" element={<RegisterInstrumentPage />} />
               <Route path="*" element={<Navigate to="/" replace />} />
             </Route>
           </Routes>

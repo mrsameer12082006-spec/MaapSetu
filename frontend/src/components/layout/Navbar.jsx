@@ -22,7 +22,7 @@ export const Navbar = () => {
   };
 
   return (
-    <header className="bg-[#FDF9F6]/95 backdrop-blur-md text-[#003943] sticky top-0 z-50 border-b border-[#003943]/10 shadow-sm">
+    <header className="bg-[#FDF9F6] text-[#003943] relative z-40 border-b border-[#003943]/10 shadow-sm">
       {/* Main Bar */}
       <div className="w-full px-6 sm:px-12 lg:px-20 h-20 flex items-center justify-between gap-6">
         {/* Brand Logo */}
@@ -54,7 +54,6 @@ export const Navbar = () => {
               <div className="absolute top-full right-0 mt-3 w-64 bg-white border border-[#003943]/20 rounded-2xl shadow-2xl p-4 z-50 space-y-3 animate-in fade-in duration-150">
                 <div className="pb-3 border-b border-[#003943]/10 space-y-0.5">
                   <p className="font-serif font-bold text-[#003943] text-sm">{user ? user.name : 'Vikramaditya Mehta'}</p>
-                  <p className="text-xs text-[#00959C] font-semibold">{user ? user.organization : 'Apex Logistics & Freight Corp'}</p>
                   <span className="inline-block mt-1 px-2 py-0.5 rounded bg-[#E0F5F6] text-[#003943] text-[10px] font-bold uppercase">
                     {user ? user.roleTitle : 'Business Owner'}
                   </span>
