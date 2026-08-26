@@ -506,15 +506,15 @@ Central Registry Reference: ${doc.id}
       <section className="w-full py-6 border-y border-[#003943]/10 bg-white/60 overflow-hidden">
         <div className="w-full px-4 mb-3 text-center">
           <p className="text-[11px] font-bold tracking-widest text-[#003943]/50 uppercase">
-            Legal Metrology Framework Standards & Ministry Compliance
+            Built Around Legal Metrology Framework Standards & Ministry Compliance
           </p>
         </div>
         <div className="flex overflow-hidden whitespace-nowrap space-x-12 select-none py-2">
           <div className="flex space-x-12 items-center text-[#003943]/70 font-bold text-sm tracking-wider animate-marquee">
-            <span>MINISTRY OF CONSUMER AFFAIRS</span> • <span>LEGAL METROLOGY ACT, 2009</span> • <span>RULES 2011 COMPLIANT</span> • <span className="text-[#00959C]">SIH PROBLEM STATEMENT 26036</span> • <span>GATC APPROVED TEST CENTRES</span> • <span>NATIONAL PHYSICAL LABORATORY (NPL) CALIBRATION</span> • <span>ISO/IEC 17025 ACCREDITATION</span>
+            <span>BUILT AROUND MINISTRY OF CONSUMER AFFAIRS</span> • <span>BUILT AROUND LEGAL METROLOGY ACT, 2009</span> • <span>BUILT AROUND RULES 2011 COMPLIANT</span> • <span className="text-[#00959C]">BUILT AROUND SIH PROBLEM STATEMENT 26036</span> • <span>BUILT AROUND GATC APPROVED TEST CENTRES</span> • <span>BUILT AROUND NATIONAL PHYSICAL LABORATORY (NPL) CALIBRATION</span> • <span>BUILT AROUND ISO/IEC 17025 ACCREDITATION</span>
           </div>
           <div className="flex space-x-12 items-center text-[#003943]/70 font-bold text-sm tracking-wider animate-marquee" aria-hidden="true">
-            <span>MINISTRY OF CONSUMER AFFAIRS</span> • <span>LEGAL METROLOGY ACT, 2009</span> • <span>RULES 2011 COMPLIANT</span> • <span className="text-[#00959C]">SIH PROBLEM STATEMENT 26036</span> • <span>GATC APPROVED TEST CENTRES</span> • <span>NATIONAL PHYSICAL LABORATORY (NPL) CALIBRATION</span> • <span>ISO/IEC 17025 ACCREDITATION</span>
+            <span>BUILT AROUND MINISTRY OF CONSUMER AFFAIRS</span> • <span>BUILT AROUND LEGAL METROLOGY ACT, 2009</span> • <span>BUILT AROUND RULES 2011 COMPLIANT</span> • <span className="text-[#00959C]">BUILT AROUND SIH PROBLEM STATEMENT 26036</span> • <span>BUILT AROUND GATC APPROVED TEST CENTRES</span> • <span>BUILT AROUND NATIONAL PHYSICAL LABORATORY (NPL) CALIBRATION</span> • <span>BUILT AROUND ISO/IEC 17025 ACCREDITATION</span>
           </div>
         </div>
       </section>

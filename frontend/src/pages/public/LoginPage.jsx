@@ -35,11 +35,12 @@ export const LoginPage = () => {
     if (isSignUp) {
       // Handle Business Registration Submission
       setTimeout(() => {
+        loginAsRole(USER_ROLES.BUSINESS);
         setLoading(false);
         setSignUpSuccess(true);
         setTimeout(() => {
-          setIsSignUp(false);
-        }, 2000);
+          navigate('/business');
+        }, 800);
       }, 600);
     } else {
       // Handle Portal Sign In Submission
@@ -47,7 +48,10 @@ export const LoginPage = () => {
         loginAsRole(selectedRole);
         setLoading(false);
         setLoginSuccess(true);
-      }, 500);
+        setTimeout(() => {
+          navigate('/business');
+        }, 600);
+      }, 400);
     }
   };
 
