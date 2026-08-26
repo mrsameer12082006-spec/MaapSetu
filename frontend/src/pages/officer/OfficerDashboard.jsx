@@ -207,7 +207,7 @@ export const OfficerDashboard = () => {
 
       {/* 4. INTERACTIVE FIELD VERIFICATION WORKSPACE MODAL */}
       {activeApp && (
-        <div className="fixed inset-0 z-50 bg-[#003943]/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+        <div className="fixed inset-0 z-[100] w-screen h-screen bg-transparent flex items-center justify-center p-4 overflow-y-auto">
           <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-7 border border-[#003943]/20 shadow-2xl animate-in zoom-in-95 duration-150 my-8">
             <div className="flex items-center justify-between pb-3 border-b border-[#003943]/10">
               <div>

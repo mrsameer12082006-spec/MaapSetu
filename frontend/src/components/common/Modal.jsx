@@ -19,7 +19,7 @@ export const Modal = ({ isOpen, onClose, title, children, maxWidth = 'max-w-2xl'
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-900/60 backdrop-blur-xs animate-in fade-in duration-200">
+    <div className="fixed inset-0 z-[100] w-screen h-screen flex items-center justify-center p-4 bg-transparent animate-in fade-in duration-200">
       <div
         className={`bg-white rounded-card shadow-xl border border-neutral-300 w-full ${maxWidth} max-h-[90vh] flex flex-col overflow-hidden`}
         role="dialog"
