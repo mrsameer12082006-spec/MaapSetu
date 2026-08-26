@@ -60,14 +60,34 @@ export const Navbar = () => {
                 </div>
 
                 <div className="space-y-1.5 pt-1">
-                  <Link
-                    to="/business"
-                    onClick={() => setProfileOpen(false)}
-                    className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#003943] hover:bg-[#E0F5F6] transition-colors"
-                  >
-                    <User className="w-4 h-4 text-[#00959C]" />
-                    <span>Business Dashboard</span>
-                  </Link>
+                  {user?.role === 'lmd' ? (
+                    <Link
+                      to="/lmd"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#003943] hover:bg-[#E0F5F6] transition-colors"
+                    >
+                      <User className="w-4 h-4 text-[#00959C]" />
+                      <span>LMD Admin Control</span>
+                    </Link>
+                  ) : user?.role === 'officer' ? (
+                    <Link
+                      to="/officer"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#003943] hover:bg-[#E0F5F6] transition-colors"
+                    >
+                      <User className="w-4 h-4 text-[#00959C]" />
+                      <span>LMO / GATC Inspection Queue</span>
+                    </Link>
+                  ) : (
+                    <Link
+                      to="/business"
+                      onClick={() => setProfileOpen(false)}
+                      className="w-full flex items-center gap-2 px-3 py-2 rounded-xl text-xs font-bold text-[#003943] hover:bg-[#E0F5F6] transition-colors"
+                    >
+                      <User className="w-4 h-4 text-[#00959C]" />
+                      <span>Business Dashboard</span>
+                    </Link>
+                  )}
 
                   <Link
                     to="/"

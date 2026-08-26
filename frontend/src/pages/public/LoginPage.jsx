@@ -48,11 +48,15 @@ export const LoginPage = () => {
         loginAsRole(selectedRole);
         setLoading(false);
         setLoginSuccess(true);
-        if (selectedRole === USER_ROLES.BUSINESS) {
-          setTimeout(() => {
+        setTimeout(() => {
+          if (selectedRole === USER_ROLES.BUSINESS) {
             navigate('/business');
-          }, 800);
-        }
+          } else if (selectedRole === USER_ROLES.LMD_ADMIN) {
+            navigate('/lmd');
+          } else if (selectedRole === USER_ROLES.OFFICER) {
+            navigate('/officer');
+          }
+        }, 800);
       }, 400);
     }
   };
