@@ -66,16 +66,48 @@ export const AssignOfficerPage = () => {
           />
 
           {currentApp && (
-            <div className="mt-4 p-4 bg-neutral-100 rounded-lg border border-neutral-300 text-xs space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="font-mono font-bold text-primary">{currentApp.id}</span>
+            <div className="mt-4 p-5 bg-[#FDF9F6] rounded-2xl border border-[#003943]/15 text-xs space-y-3">
+              <div className="flex items-center justify-between border-b border-[#003943]/10 pb-2">
+                <span className="font-mono font-bold text-[#00959C]">{currentApp.id}</span>
                 <Badge status={currentApp.status}>{currentApp.status}</Badge>
               </div>
-              <p className="font-semibold text-neutral-900 text-sm">{currentApp.instrumentName}</p>
-              <p className="text-neutral-600">Applicant: {currentApp.applicantName} • Preferred Date: {currentApp.preferredDate}</p>
-              <p className="text-neutral-600 flex items-center gap-1">
-                <MapPin className="w-3.5 h-3.5 text-primary shrink-0" /> {currentApp.inspectionLocation}
-              </p>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 bg-white p-3.5 rounded-xl border border-[#003943]/10">
+                <div>
+                  <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Vendor Business Name</span>
+                  <p className="font-serif font-bold text-[#003943] text-sm">{currentApp.applicantName}</p>
+                </div>
+                <div>
+                  <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Machine / Instrument</span>
+                  <p className="font-bold text-[#003943]">{currentApp.instrumentName}</p>
+                </div>
+                <div>
+                  <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Verification Type</span>
+                  <p className="font-semibold text-[#003943]">{currentApp.applicationType}</p>
+                </div>
+                <div>
+                  <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Installation Location</span>
+                  <p className="font-semibold text-[#003943] flex items-center gap-1">
+                    <MapPin className="w-3.5 h-3.5 text-[#00959C] shrink-0" /> {currentApp.inspectionLocation}
+                  </p>
+                </div>
+              </div>
+
+              {currentApp.assignedOfficerName ? (
+                <div className="p-3.5 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 space-y-1">
+                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-emerald-700 block">
+                    Currently Assigned Verifier for Vendor
+                  </span>
+                  <p className="font-serif font-bold text-[#003943] text-sm">{currentApp.assignedOfficerName}</p>
+                  <p className="text-[11px] text-[#003943]/70">
+                    Scheduled Field Inspection: <span className="font-semibold">{currentApp.scheduledInspectionDate || 'Pending Date'}</span>
+                  </p>
+                </div>
+              ) : (
+                <div className="p-3 bg-amber-50 rounded-xl border border-amber-200 text-amber-800 font-bold text-xs">
+                  ⚠️ No Verifier Assigned Yet — Ready to allocate LMO Inspector or GATC Centre below.
+                </div>
+              )}
             </div>
           )}
         </Card>

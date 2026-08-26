@@ -42,20 +42,27 @@ const MOCK_USERS = {
 };
 
 export const AuthProvider = ({ children }) => {
-  // Default to Business for immediate inspection, or null if unauthenticated
-  const [currentRole, setCurrentRole] = useState(USER_ROLES.BUSINESS);
-  const [user, setUser] = useState(MOCK_USERS[USER_ROLES.BUSINESS]);
+  const getSavedRole = () => {
+    const saved = typeof window !== 'undefined' ? localStorage.getItem('maapsetu_role') : null;
+    if (saved && MOCK_USERS[saved]) return saved;
+    return USER_ROLES.BUSINESS;
+  };
+
+  const [currentRole, setCurrentRole] = useState(getSavedRole);
+  const [user, setUser] = useState(() => MOCK_USERS[getSavedRole()]);
 
   const loginAsRole = (roleKey) => {
     if (MOCK_USERS[roleKey]) {
       setCurrentRole(roleKey);
       setUser(MOCK_USERS[roleKey]);
+      localStorage.setItem('maapsetu_role', roleKey);
     }
   };
 
   const logout = () => {
     setCurrentRole(null);
     setUser(null);
+    localStorage.removeItem('maapsetu_role');
   };
 
   return (

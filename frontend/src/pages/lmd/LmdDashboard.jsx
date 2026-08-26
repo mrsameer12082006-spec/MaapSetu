@@ -90,8 +90,8 @@ export const LmdDashboard = () => {
         </p>
       </div>
 
-      {/* 2. MAIN METRICS BAR (EXACT NUMBERS REQUESTED) */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      {/* 2. MAIN METRICS BAR */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
         <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-2xl sm:text-3xl font-serif font-bold text-[#003943]">{metrics.newApps}</p>
           <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">New</p>
@@ -105,11 +105,6 @@ export const LmdDashboard = () => {
         <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-2xl sm:text-3xl font-serif font-bold text-[#00959C]">{metrics.awaitingAssignment}</p>
           <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Awaiting Assign</p>
-        </div>
-
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-purple-700">{metrics.scheduled}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Scheduled</p>
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
@@ -221,30 +216,19 @@ export const LmdDashboard = () => {
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {officers.map((off) => (
-            <div key={off.id} className="p-4 rounded-2xl border border-[#003943]/15 bg-[#FDF9F6] space-y-2">
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2.5">
-                  <img src={off.avatar} alt={off.name} className="w-8 h-8 rounded-full object-cover border border-[#00959C]" />
-                  <div>
-                    <h4 className="font-bold text-xs text-[#003943]">{off.name}</h4>
-                    <span className="text-[10px] text-[#00959C] font-semibold">{off.role}</span>
-                  </div>
-                </div>
-                <span className="text-xs font-bold text-emerald-700">★ {off.rating}</span>
-              </div>
-              <p className="text-[11px] text-[#003943]/70">Zone: {off.zone}</p>
-              <p className="text-[11px] font-bold text-[#003943]">Active Load: {off.activeCount} verifications</p>
-            </div>
-          ))}
+        <div className="bg-[#FDF9F6] rounded-2xl p-8 border border-[#003943]/15 text-center space-y-2">
+          <Users className="w-8 h-8 text-[#00959C] mx-auto" />
+          <p className="font-serif font-bold text-[#003943] text-base">No authorized verifiers added yet</p>
+          <p className="text-xs text-[#003943]/60 max-w-md mx-auto">
+            State Legal Metrology Officers (LMO) and Government Approved Test Centres (GATC) will appear here once onboarded into the registry.
+          </p>
         </div>
       </div>
 
       {/* 5. REVIEW & ASSIGN VERIFIER MODAL */}
       {selectedApp && (
-        <div className="fixed inset-0 z-50 bg-[#003943]/60 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-xl w-full p-6 sm:p-8 space-y-6 border border-[#003943]/20 shadow-2xl animate-in zoom-in-95 duration-150">
+        <div className="fixed inset-0 z-50 bg-[#003943]/60 backdrop-blur-xs flex items-center justify-center p-4 overflow-y-auto">
+          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-6 border border-[#003943]/20 shadow-2xl animate-in zoom-in-95 duration-150 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between pb-3 border-b border-[#003943]/10">
               <div>
                 <span className="text-[10px] font-extrabold text-[#00959C] uppercase tracking-wider">
@@ -263,12 +247,102 @@ export const LmdDashboard = () => {
               </button>
             </div>
 
-            {/* Case Details Box */}
-            <div className="p-4 bg-[#FDF9F6] rounded-2xl border border-[#003943]/10 text-xs space-y-1.5">
-              <p className="font-mono font-bold text-[#00959C]">{selectedApp.id}</p>
-              <p className="font-serif font-bold text-[#003943] text-sm">{selectedApp.instrumentName}</p>
-              <p className="text-[#003943]/70">Applicant: {selectedApp.applicantName}</p>
-              <p className="text-[#003943]/70">Location: {selectedApp.inspectionLocation}</p>
+            {/* Full Machine Specifications & Legal Application Record */}
+            <div className="p-4 sm:p-5 bg-[#FDF9F6] rounded-2xl border border-[#003943]/15 space-y-4 text-xs">
+              <div className="flex items-center justify-between border-b border-[#003943]/10 pb-2.5">
+                <div>
+                  <span className="font-mono font-bold text-[#00959C]">{selectedApp.id}</span>
+                  <h4 className="font-serif font-bold text-[#003943] text-sm mt-0.5">{selectedApp.instrumentName}</h4>
+                </div>
+                <span className="px-2.5 py-1 rounded-full bg-[#E0F5F6] text-[#003943] font-bold text-[10px] uppercase">
+                  {selectedApp.applicationType}
+                </span>
+              </div>
+
+              {/* 1. Technical Specifications */}
+              <div className="space-y-1.5">
+                <p className="font-bold uppercase text-[10px] tracking-wider text-[#00959C]">
+                  1. Technical Specifications
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-[#003943]/10">
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Manufacturer</span>
+                    <span className="font-semibold text-[#003943]">Avery India Ltd</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Model Designation</span>
+                    <span className="font-semibold text-[#003943]">WB-60T-PRO</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Serial Number</span>
+                    <span className="font-mono font-bold text-[#00959C]">AV-984210-IN</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Max Capacity</span>
+                    <span className="font-semibold text-[#003943]">60,000 kg (60T)</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Min Capacity</span>
+                    <span className="font-semibold text-[#003943]">200 kg</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Accuracy Class</span>
+                    <span className="font-semibold text-[#003943]">Class III (Medium)</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Scale Interval (e)</span>
+                    <span className="font-semibold text-[#003943]">10 kg</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Unit of Measure</span>
+                    <span className="font-semibold text-[#003943]">Kilogram (kg)</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Quantity</span>
+                    <span className="font-semibold text-[#003943]">1 Unit</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 2. Premises & Installation Location */}
+              <div className="space-y-1.5">
+                <p className="font-bold uppercase text-[10px] tracking-wider text-[#00959C]">
+                  2. Premises & Installation Details
+                </p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 bg-white p-3 rounded-xl border border-[#003943]/10">
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Business / Premises</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.applicantName}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Installation Address</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.inspectionLocation}</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* 3. Legal Approval & Verification Details */}
+              <div className="space-y-1.5">
+                <p className="font-bold uppercase text-[10px] tracking-wider text-[#00959C]">
+                  3. Legal Approval & Certificate Details
+                </p>
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5 bg-white p-3 rounded-xl border border-[#003943]/10">
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Verification Type</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.applicationType}</span>
+                  </div>
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Model Approval No</span>
+                    <span className="font-mono font-bold text-[#003943]">IND/09/2021/442</span>
+                  </div>
+                  {selectedApp.applicationType?.toLowerCase().includes('re-verification') && (
+                    <div>
+                      <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Previous Cert No</span>
+                      <span className="font-mono font-bold text-[#003943]">CERT-2025-8891</span>
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
 
             {/* Verifier Route Eligibility Selection */}

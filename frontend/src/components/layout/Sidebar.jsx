@@ -1,5 +1,5 @@
 import React from 'react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
   FileCheck,
@@ -16,24 +16,34 @@ import {
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
 
 export const Sidebar = () => {
+  const location = useLocation();
   const { currentRole } = useAuth();
+
+  // Route-aware active role fallback for page refresh
+  let activeRole = currentRole;
+  if (location.pathname.startsWith('/lmd')) {
+    activeRole = USER_ROLES.LMD_ADMIN;
+  } else if (location.pathname.startsWith('/officer') || location.pathname.startsWith('/lmo')) {
+    activeRole = USER_ROLES.OFFICER;
+  } else if (location.pathname.startsWith('/business')) {
+    activeRole = USER_ROLES.BUSINESS;
+  }
 
   let navItems = [];
 
-  if (currentRole === USER_ROLES.LMD_ADMIN) {
+  if (activeRole === USER_ROLES.LMD_ADMIN) {
     navItems = [
       { to: '/lmd', label: 'Admin Dashboard', icon: LayoutDashboard, end: true },
       { to: '/lmd/review', label: 'Review Applications', icon: FileCheck },
-      { to: '/lmd/assign', label: 'Assign Officer / GATC', icon: UserCheck },
       { to: '/lmd/all', label: 'All Applications', icon: Layers }
     ];
-  } else if (currentRole === USER_ROLES.OFFICER) {
+  } else if (activeRole === USER_ROLES.OFFICER) {
     navItems = [
       { to: '/officer', label: 'Officer Dashboard', icon: LayoutDashboard, end: true },
       { to: '/officer/queue', label: 'Assigned Verification Queue', icon: ClipboardList },
       { to: '/officer/verify/new', label: 'Record Inspection Result', icon: CheckSquare }
     ];
-  } else if (currentRole === USER_ROLES.BUSINESS) {
+  } else {
     navItems = [
       { to: '/business', label: 'Business Dashboard', icon: LayoutDashboard, end: true },
       { to: '/business/register', label: 'Register Instrument', icon: PlusCircle },
@@ -50,9 +60,9 @@ export const Sidebar = () => {
         <div className="px-3 py-2 bg-neutral-100 rounded-lg border border-neutral-300">
           <p className="text-[10px] uppercase font-bold tracking-wider text-neutral-600">Portal View</p>
           <p className="text-sm font-bold text-primary capitalize mt-0.5">
-            {currentRole === USER_ROLES.LMD_ADMIN
+            {activeRole === USER_ROLES.LMD_ADMIN
               ? 'LMD Administrator'
-              : currentRole === USER_ROLES.OFFICER
+              : activeRole === USER_ROLES.OFFICER
               ? 'LMO / GATC Inspector'
               : 'Business Owner'}
           </p>
@@ -78,18 +88,6 @@ export const Sidebar = () => {
             </NavLink>
           ))}
         </nav>
-
-        {/* Emergency Assistance Notice */}
-        <div className="pt-6 border-t border-neutral-300">
-          <div className="p-3 bg-primary-light/50 border border-primary/20 rounded-lg text-xs">
-            <div className="flex items-center gap-2 text-primary font-semibold mb-1">
-              <ShieldAlert className="w-4 h-4" />
-              <span>Legal Metrology Helpdesk</span>
-            </div>
-            <p className="text-[11px] text-neutral-600">Toll Free: 1800-11-4000</p>
-            <p className="text-[11px] text-neutral-600">Email: helpdesk-lmd@nic.in</p>
-          </div>
-        </div>
       </div>
     </aside>
   );

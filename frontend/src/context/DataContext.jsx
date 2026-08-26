@@ -132,6 +132,32 @@ export const DataProvider = ({ children }) => {
     return response;
   };
 
+  const generateCertificate = async (applicationId) => {
+    const app = applications.find((a) => a.id === applicationId);
+    if (!app) return null;
+
+    const certId = `CERT-2026-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newCert = {
+      id: certId,
+      applicationId: app.id,
+      instrumentId: app.instrumentId,
+      instrumentName: app.instrumentName,
+      ownerName: app.applicantName,
+      verificationDate: new Date().toISOString().split('T')[0],
+      expiryDate: '2027-08-25',
+      officerName: app.assignedOfficerName || 'Inspector Rajesh V. Sharma (LMO)',
+      status: 'Valid',
+      qrCodeUrl: `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=https://maapsetu.gov.in/verify/${certId}`
+    };
+
+    setCertificates((prev) => [newCert, ...prev]);
+    setApplications((prev) =>
+      prev.map((a) => (a.id === applicationId ? { ...a, status: 'passed', certificateId: certId } : a))
+    );
+    addLog(`Generated Legal Metrology Certificate ${certId} for ${app.instrumentName}`, 'LMD Admin');
+    return newCert;
+  };
+
   const runOCR = async (file) => {
     return await mockApiService.extractInstrumentPlateData(file);
   };
@@ -148,6 +174,7 @@ export const DataProvider = ({ children }) => {
         submitApplication,
         assignOfficer,
         submitVerificationResult,
+        generateCertificate,
         runOCR
       }}
     >
