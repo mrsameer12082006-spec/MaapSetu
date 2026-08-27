@@ -104,7 +104,7 @@ export const ReviewApplicationsPage = () => {
                   if (row.scheduledInspectionDate) setScheduledDate(row.scheduledInspectionDate);
                 }}
               >
-                Assign Officer
+                Assigned Officer
               </Button>
             )}
           </div>

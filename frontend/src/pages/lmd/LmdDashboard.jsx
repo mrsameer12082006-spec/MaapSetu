@@ -98,8 +98,8 @@ export const LmdDashboard = () => {
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-amber-700">{metrics.underReview}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Under Review</p>
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-cyan-700">{metrics.underReview}</p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">In Progress</p>
         </div>
 
         <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
