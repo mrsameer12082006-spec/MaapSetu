@@ -21,7 +21,7 @@ const MOCK_USERS = {
   },
   [USER_ROLES.LMD_ADMIN]: {
     id: 'USR-LMD-01',
-    name: 'Sunita Prabhakar (IAS)',
+    name: 'Sunita Prabhakar',
     organization: 'Legal Metrology Department, Govt of Maharashtra',
     role: USER_ROLES.LMD_ADMIN,
     roleTitle: 'LMD Administrator',

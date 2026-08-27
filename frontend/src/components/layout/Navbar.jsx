@@ -24,7 +24,7 @@ export const Navbar = () => {
   return (
     <header className="bg-[#FDF9F6] text-[#003943] relative z-40 border-b border-[#003943]/10 shadow-sm">
       {/* Main Bar */}
-      <div className="w-full px-6 sm:px-12 lg:px-20 h-20 flex items-center justify-between gap-6">
+      <div className="w-full px-4 h-20 flex items-center justify-between gap-6">
         {/* Brand Logo */}
         <Link to="/" className="flex items-center gap-3.5 group shrink-0">
           <div className="w-11 h-11 rounded-2xl bg-[#003943] text-[#02B7BF] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
