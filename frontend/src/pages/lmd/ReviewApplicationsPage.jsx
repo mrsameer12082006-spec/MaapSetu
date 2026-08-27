@@ -148,15 +148,6 @@ export const ReviewApplicationsPage = () => {
           maxWidth="max-w-3xl"
           footer={
             <div className="flex items-center gap-3">
-              <Button
-                variant="danger"
-                onClick={() => {
-                  alert(`Application ${selectedApp.id} marked for document clarification.`);
-                  setSelectedApp(null);
-                }}
-              >
-                Request Clarification
-              </Button>
               {selectedApp.status === 'passed' || selectedApp.status === 'inspection_passed' ? (
                 <Button
                   variant="accent"
@@ -168,18 +159,38 @@ export const ReviewApplicationsPage = () => {
                 >
                   Generate Certificate
                 </Button>
+              ) : selectedApp.status === 'failed' ? (
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-full border border-red-200">
+                    ❌ Inspection Failed — Certificate Generation Locked
+                  </span>
+                  <Button variant="ghost" onClick={() => setSelectedApp(null)}>
+                    Close
+                  </Button>
+                </div>
               ) : (
-                <Button
-                  variant="primary"
-                  icon={UserCheck}
-                  onClick={() => {
-                    const targetId = selectedApp.id;
-                    setSelectedApp(null);
-                    navigate(`/lmd/assign?appId=${targetId}`);
-                  }}
-                >
-                  Approve & Assign Officer →
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      alert(`Application ${selectedApp.id} marked for document clarification.`);
+                      setSelectedApp(null);
+                    }}
+                  >
+                    Request Clarification
+                  </Button>
+                  <Button
+                    variant="primary"
+                    icon={UserCheck}
+                    onClick={() => {
+                      const targetApp = selectedApp;
+                      setSelectedApp(null);
+                      setAssignModalApp(targetApp);
+                    }}
+                  >
+                    Assigned Officer
+                  </Button>
+                </div>
               )}
             </div>
           }
@@ -289,28 +300,100 @@ export const ReviewApplicationsPage = () => {
                   )}
                 </div>
               </div>
-            </div>
 
-            <div>
-              <h4 className="text-xs font-semibold uppercase text-neutral-600 border-b pb-1 mb-2">
-                Attached Documents ({selectedApp.documents.length})
-              </h4>
-              <div className="space-y-2">
-                {selectedApp.documents.map((doc, idx) => (
-                  <div key={idx} className="flex items-center justify-between p-3 bg-white rounded border border-neutral-300 text-xs">
-                    <span className="font-medium text-neutral-900 flex items-center gap-2">
-                      <FileText className="w-4 h-4 text-primary" /> {doc.name}
+              {/* 4. LMO Field Inspection Result & Technical Report */}
+              <div className="space-y-2 pt-2 border-t border-[#003943]/15">
+                <div className="flex items-center justify-between">
+                  <p className="font-bold uppercase text-[11px] tracking-wider text-[#00959C]">
+                    4. LMO Field Inspection Result & Technical Report
+                  </p>
+                  {selectedApp.status === 'passed' && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-extrabold text-[10px] uppercase">
+                      ✓ PASS / STAMPED
                     </span>
-                    <button
-                      onClick={() => alert(`Previewing ${doc.name}`)}
-                      className="text-xs text-primary font-semibold hover:underline"
-                    >
-                      Preview File
-                    </button>
+                  )}
+                  {selectedApp.status === 'failed' && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-red-100 text-red-800 font-extrabold text-[10px] uppercase">
+                      ✕ FAIL / REJECTED
+                    </span>
+                  )}
+                  {selectedApp.status !== 'passed' && selectedApp.status !== 'failed' && (
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-extrabold text-[10px] uppercase">
+                      ⏳ INSPECTION IN PROGRESS
+                    </span>
+                  )}
+                </div>
+
+                <div className="p-4 bg-white rounded-2xl border border-[#003943]/15 space-y-3 text-xs">
+                  <div className="flex justify-between items-center bg-[#FDF9F6] p-3 rounded-xl border border-[#003943]/10">
+                    <div>
+                      <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Assigned Inspection Officer</span>
+                      <span className="font-bold text-[#003943] text-sm">
+                        {selectedApp.assignedOfficerName || 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)'}
+                      </span>
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Scheduled / Inspection Date</span>
+                      <span className="font-mono font-bold text-[#003943]">
+                        {selectedApp.scheduledInspectionDate || '28 Aug 2026'}
+                      </span>
+                    </div>
                   </div>
-                ))}
+
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase mb-1">
+                      Physical Inspection Checklist (Verified on Site)
+                    </span>
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Nameplate Checked</div>
+                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Model Approved</div>
+                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Capacity Checked</div>
+                      <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Lead Seal Affixed</div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase mb-1">
+                      Technical Verification & Rule MPE Test Results
+                    </span>
+                    <DynamicTechnicalVerification instrumentName={selectedApp.instrumentName} applicationType={selectedApp.applicationType} />
+                  </div>
+
+                  <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
+                    <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Officer Remarks & Observations</span>
+                    <p className="font-semibold text-[#003943] text-xs mt-1">
+                      "{selectedApp.observations || 'All physical inspection criteria passed. Lead seal affixed & QR code digital stamp generated.'}"
+                    </p>
+                  </div>
+
+                  {selectedApp.status === 'failed' && (
+                    <div className="p-3 bg-red-50 rounded-xl border border-red-200 text-red-900 font-bold">
+                      ⚠️ Rejection Reason Recorded: {selectedApp.rejectionReason || 'MPE Error Exceeded Rule Limits'}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
+
+            {selectedApp.applicationType?.toLowerCase().includes('re-verification') && (
+              <div>
+                <h4 className="text-xs font-bold uppercase tracking-wider text-[#003943]/80 border-b pb-1 mb-2">
+                  Attached Document (1)
+                </h4>
+                <div className="p-3 bg-white rounded-xl border border-[#003943]/15 flex items-center justify-between text-xs shadow-xs">
+                  <span className="font-bold text-[#003943] flex items-center gap-2">
+                    <FileText className="w-4 h-4 text-[#00959C]" /> Previous_Verification_Certificate_2025.pdf
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => alert('Previewing Previous_Verification_Certificate_2025.pdf')}
+                    className="text-xs text-[#00959C] font-bold hover:underline"
+                  >
+                    Preview File
+                  </button>
+                </div>
+              </div>
+            )}
 
             {selectedApp.notes && (
               <div className="p-3 bg-neutral-100 rounded border border-neutral-300 text-xs">

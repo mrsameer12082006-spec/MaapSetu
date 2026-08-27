@@ -74,20 +74,21 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Periodic Re-verification',
     submissionDate: '2026-08-20',
     preferredDate: '2026-08-28',
-    status: 'assigned',
+    status: 'passed',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-22',
     scheduledInspectionDate: '2026-08-28',
     inspectionLocation: 'Nagpur MIDC Area, Maharashtra',
+    observations: 'All 6 physical inspection criteria passed. Dead weight 60T test within MPE limits. Lead seal affixed & QR code digital stamp generated.',
     documents: [
-      { name: 'Previous_Certificate_2025.pdf', size: '1.2 MB', url: '#' },
-      { name: 'Calibration_PreCheck_Report.pdf', size: '850 KB', url: '#' }
+      { name: 'Previous_Verification_Certificate_2025.pdf', size: '1.2 MB', url: '#' }
     ],
     notes: 'Requires heavy standard test weights (20-tonne truck load).',
     timeline: [
       { step: 'Application Submitted', date: '2026-08-20 10:30 AM', actor: 'Business Owner' },
-      { step: 'Assigned to Inspector Rajesh V. Sharma', date: '2026-08-22 11:00 AM', actor: 'LMD Admin' }
+      { step: 'Assigned to Inspector Rajesh V. Sharma', date: '2026-08-22 11:00 AM', actor: 'LMD Admin' },
+      { step: 'Field Inspection Passed & Certified', date: '2026-08-28 02:15 PM', actor: 'Inspector Rajesh V. Sharma' }
     ]
   },
   {
@@ -98,15 +99,14 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Initial Verification',
     submissionDate: '2026-08-24',
     preferredDate: '2026-08-30',
-    status: 'assigned',
+    status: 'in_progress',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-25',
     scheduledInspectionDate: '2026-08-29',
     inspectionLocation: 'Sector 17, Commercial Complex, Chandigarh',
-    documents: [
-      { name: 'Model_Approval_Cert_MHA.pdf', size: '1.8 MB', url: '#' }
-    ],
+    observations: 'Physical inspection underway at retail site.',
+    documents: [],
     notes: 'Commercial retail digital scale for grocery & retail counter.',
     timeline: [
       { step: 'Application Submitted', date: '2026-08-24 04:45 PM', actor: 'Business Owner' }
@@ -120,18 +120,20 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Re-verification After Stamping/Repair',
     submissionDate: '2026-08-18',
     preferredDate: '2026-08-22',
-    status: 'in_progress',
+    status: 'passed',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-19',
     scheduledInspectionDate: '2026-08-25',
     inspectionLocation: 'NH-44 Expressway Fuel Station, Ambala',
+    observations: 'Volumetric measure check 20L standard measure passed (-0.025% error). Multi-product nozzle lead seal attached.',
     documents: [
-      { name: 'Repair_Notice_Form_B.pdf', size: '920 KB', url: '#' }
+      { name: 'Previous_Verification_Certificate_2025.pdf', size: '1.2 MB', url: '#' }
     ],
     notes: 'Multi-product fuel dispenser (Petrol / Diesel). Volumetric measure check required.',
     timeline: [
-      { step: 'Application Submitted', date: '2026-08-18 09:00 AM', actor: 'Business Owner' }
+      { step: 'Application Submitted', date: '2026-08-18 09:00 AM', actor: 'Business Owner' },
+      { step: 'Field Inspection Passed', date: '2026-08-25 11:30 AM', actor: 'Inspector Rajesh V. Sharma' }
     ]
   },
   {
@@ -142,18 +144,21 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Periodic Re-verification',
     submissionDate: '2026-08-21',
     preferredDate: '2026-08-27',
-    status: 'assigned',
+    status: 'failed',
+    rejectionReason: 'MPE exceeded',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-22',
     scheduledInspectionDate: '2026-08-29',
     inspectionLocation: 'Navi Mumbai Port Terminal Pipeline',
+    observations: '[Rejection Reason: MPE exceeded] Flow rate measurement error exceeded allowable +/-0.15% MPE limit. Calibration required before re-testing.',
     documents: [
-      { name: 'Port_Safety_Clearance.pdf', size: '3.1 MB', url: '#' }
+      { name: 'Previous_Verification_Certificate_2025.pdf', size: '1.2 MB', url: '#' }
     ],
     notes: 'Mass flowmeter line testing with reference prover loop.',
     timeline: [
-      { step: 'Application Submitted', date: '2026-08-21 02:00 PM', actor: 'Business Owner' }
+      { step: 'Application Submitted', date: '2026-08-21 02:00 PM', actor: 'Business Owner' },
+      { step: 'Inspection Failed - MPE Exceeded', date: '2026-08-29 03:00 PM', actor: 'Inspector Rajesh V. Sharma' }
     ]
   },
   {
@@ -164,15 +169,13 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Initial Verification',
     submissionDate: '2026-08-23',
     preferredDate: '2026-08-28',
-    status: 'assigned',
+    status: 'in_progress',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-24',
     scheduledInspectionDate: '2026-08-30',
     inspectionLocation: 'Packaging Plant Unit 4, MIDC Warehouse',
-    documents: [
-      { name: 'Package_Compliance_Doc.pdf', size: '1.5 MB', url: '#' }
-    ],
+    documents: [],
     notes: 'Check net quantity package filling tare & sample weight deviation.',
     timeline: [
       { step: 'Application Submitted', date: '2026-08-23 11:15 AM', actor: 'Business Owner' }
@@ -186,18 +189,21 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Periodic Re-verification',
     submissionDate: '2026-08-22',
     preferredDate: '2026-08-29',
-    status: 'assigned',
+    status: 'failed',
+    rejectionReason: 'Seal damaged',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-23',
     scheduledInspectionDate: '2026-08-30',
     inspectionLocation: 'Quality Control Analytical Testing Lab 2',
+    observations: '[Rejection Reason: Seal damaged] OEM lead seal found broken / tampered during physical inspection. Recalibration and re-sealing required.',
     documents: [
-      { name: 'NABL_Calibration_Report.pdf', size: '2.4 MB', url: '#' }
+      { name: 'Previous_Verification_Certificate_2025.pdf', size: '1.2 MB', url: '#' }
     ],
     notes: 'Class I analytical balance (0.0001g resolution) calibration.',
     timeline: [
-      { step: 'Application Submitted', date: '2026-08-22 03:30 PM', actor: 'Business Owner' }
+      { step: 'Application Submitted', date: '2026-08-22 03:30 PM', actor: 'Business Owner' },
+      { step: 'Inspection Failed - Seal Damaged', date: '2026-08-30 01:15 PM', actor: 'Inspector Rajesh V. Sharma' }
     ]
   }
 ];
