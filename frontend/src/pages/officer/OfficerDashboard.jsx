@@ -18,6 +18,7 @@ import {
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import { DynamicTechnicalVerification } from '../../components/verification/DynamicTechnicalVerification';
 
 export const OfficerDashboard = () => {
   const { user } = useAuth();
@@ -48,6 +49,7 @@ export const OfficerDashboard = () => {
   const [photosUploaded, setPhotosUploaded] = useState(true);
   const [remarks, setRemarks] = useState('All 6 physical inspection criteria passed. Lead seal affixed & QR code digital stamp generated.');
   const [outcome, setOutcome] = useState('PASS'); // 'PASS' or 'FAIL'
+  const [failReason, setFailReason] = useState('MPE exceeded');
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -68,10 +70,14 @@ export const OfficerDashboard = () => {
     if (!activeApp) return;
     setSubmitting(true);
 
+    const finalRemarks = outcome === 'FAIL'
+      ? `[Rejection Reason: ${failReason}] ${remarks}`
+      : remarks;
+
     await submitVerificationResult({
       applicationId: activeApp.id,
       result: outcome,
-      observations: remarks,
+      observations: finalRemarks,
       evidencePhotos: [
         'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
         'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
@@ -145,10 +151,13 @@ export const OfficerDashboard = () => {
               >
                 <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="space-y-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
                       <span className="font-mono text-xs font-bold text-[#00959C]">{app.id}</span>
                       <span className="px-2.5 py-0.5 rounded-full bg-cyan-100 text-cyan-900 text-[10px] font-bold uppercase">
                         Scheduled: {app.scheduledInspectionDate || 'Today'}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 text-[10px] font-bold uppercase">
+                        {String(app.applicationType || '').toLowerCase().includes('re') ? 'Re-verification' : 'Initial Verification'}
                       </span>
                     </div>
 
@@ -197,8 +206,8 @@ export const OfficerDashboard = () => {
                 <p className="font-serif font-bold text-[#003943] text-sm">{app.instrumentName}</p>
                 <p className="text-[#003943]/70">Owner: {app.applicantName}</p>
               </div>
-              <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs">
-                PASS / CERTIFIED
+              <span className={`px-3.5 py-1 rounded-full font-bold text-xs ${app.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                {app.status === 'failed' ? 'FAIL' : 'PASS'}
               </span>
             </div>
           ))}
@@ -207,25 +216,29 @@ export const OfficerDashboard = () => {
 
       {/* 4. INTERACTIVE FIELD VERIFICATION WORKSPACE MODAL */}
       {activeApp && (
-        <div className="fixed inset-0 z-[100] w-screen h-screen bg-transparent flex items-center justify-center p-4 overflow-y-auto">
-          <div className="bg-white rounded-3xl max-w-3xl w-full p-6 sm:p-8 space-y-7 border border-[#003943]/20 shadow-2xl animate-in zoom-in-95 duration-150 my-8">
-            <div className="flex items-center justify-between pb-3 border-b border-[#003943]/10">
+        <div className="fixed inset-0 z-[100] w-screen h-screen bg-transparent flex items-center justify-center p-4">
+          <div className="bg-white rounded-3xl max-w-3xl w-full max-h-[92vh] flex flex-col overflow-hidden border border-[#003943]/20 shadow-2xl animate-in zoom-in-95 duration-150">
+            {/* Fixed Header */}
+            <div className="px-6 py-4 border-b border-[#003943]/10 flex items-center justify-between bg-white shrink-0">
               <div>
                 <span className="text-[10px] font-extrabold text-[#00959C] uppercase tracking-wider">
                   INSTRUMENT VERIFICATION WORKSPACE
                 </span>
-                <h3 className="font-serif font-bold text-2xl text-[#003943]">
+                <h3 className="font-serif font-bold text-xl sm:text-2xl text-[#003943]">
                   Physical Inspection & Test Report
                 </h3>
               </div>
               <button
                 type="button"
                 onClick={() => setActiveApp(null)}
-                className="w-8 h-8 rounded-full bg-slate-100 text-[#003943] flex items-center justify-center font-bold"
+                className="w-9 h-9 rounded-full bg-slate-100 hover:bg-slate-200 text-[#003943] flex items-center justify-center font-bold text-lg transition-colors shrink-0"
               >
                 ✕
               </button>
             </div>
+
+            {/* Scrollable Body */}
+            <div className="p-6 sm:p-8 overflow-y-auto flex-1 space-y-6">
 
             {submitSuccess && (
               <div className="p-4 bg-emerald-100 border border-emerald-300 rounded-2xl text-emerald-800 text-sm font-bold flex items-center gap-3">
@@ -263,7 +276,7 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('nameplateChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Identification / nameplate checked</span>
+                    <span className="font-semibold text-[#003943]">Identification / nameplate checked</span>
                   </label>
 
                   <label className="p-3 bg-[#FDF9F6] rounded-xl border border-[#003943]/15 flex items-center gap-3 cursor-pointer">
@@ -273,7 +286,7 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('modelChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Manufacturer / model checked</span>
+                    <span className="font-semibold text-[#003943]">Manufacturer / model checked</span>
                   </label>
 
                   <label className="p-3 bg-[#FDF9F6] rounded-xl border border-[#003943]/15 flex items-center gap-3 cursor-pointer">
@@ -283,7 +296,7 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('capacityChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Capacity checked</span>
+                    <span className="font-semibold text-[#003943]">Capacity checked</span>
                   </label>
 
                   <label className="p-3 bg-[#FDF9F6] rounded-xl border border-[#003943]/15 flex items-center gap-3 cursor-pointer">
@@ -293,7 +306,7 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('accuracyClassChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Accuracy class checked</span>
+                    <span className="font-semibold text-[#003943]">Accuracy class checked</span>
                   </label>
 
                   <label className="p-3 bg-[#FDF9F6] rounded-xl border border-[#003943]/15 flex items-center gap-3 cursor-pointer">
@@ -303,7 +316,7 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('markingsChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Required markings checked</span>
+                    <span className="font-semibold text-[#003943]">Required markings checked</span>
                   </label>
 
                   <label className="p-3 bg-[#FDF9F6] rounded-xl border border-[#003943]/15 flex items-center gap-3 cursor-pointer">
@@ -313,76 +326,13 @@ export const OfficerDashboard = () => {
                       onChange={() => handleToggleChecklist('sealConditionChecked')}
                       className="w-4 h-4 text-[#00959C] rounded"
                     />
-                    <span className="font-semibold text-[#003943]">☑ Seal condition checked</span>
+                    <span className="font-semibold text-[#003943]">Seal condition checked</span>
                   </label>
                 </div>
               </div>
 
-              {/* B. LEGAL METROLOGY TEST RESULTS (MPE CHECKS) */}
-              <div className="space-y-3">
-                <h4 className="font-serif font-bold text-base text-[#003943] flex items-center gap-2">
-                  <FileText className="w-4 h-4 text-[#00959C]" />
-                  <span>2. Rule-Based Test Results (Rules 2011 MPE Specs)</span>
-                </h4>
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
-                  <div className="space-y-1">
-                    <label className="block font-bold text-[#003943]">
-                      Test 1: Zero Load & Repeatability <span className="text-gray-500 font-normal">(Expected: 0.0 kg)</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="test1ZeroLoad"
-                      value={testResults.test1ZeroLoad}
-                      onChange={handleTestChange}
-                      required
-                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3 py-2.5 font-mono font-bold text-[#003943]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block font-bold text-[#003943]">
-                      Test 2: Half Load Eccentricity <span className="text-gray-500 font-normal">(Expected: 30,000.0 kg)</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="test2HalfLoad"
-                      value={testResults.test2HalfLoad}
-                      onChange={handleTestChange}
-                      required
-                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3 py-2.5 font-mono font-bold text-[#003943]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block font-bold text-[#003943]">
-                      Test 3: Max Load Capacity <span className="text-gray-500 font-normal">(Expected: 60,000.0 kg)</span>
-                    </label>
-                    <input
-                      type="text"
-                      name="test3MaxLoad"
-                      value={testResults.test3MaxLoad}
-                      onChange={handleTestChange}
-                      required
-                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3 py-2.5 font-mono font-bold text-[#003943]"
-                    />
-                  </div>
-
-                  <div className="space-y-1">
-                    <label className="block font-bold text-[#003943]">
-                      Test 4: MPE Error Limit Check
-                    </label>
-                    <input
-                      type="text"
-                      name="mpeCheck"
-                      value={testResults.mpeCheck}
-                      onChange={handleTestChange}
-                      required
-                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3 py-2.5 font-mono font-bold text-emerald-700"
-                    />
-                  </div>
-                </div>
-              </div>
+              {/* B. INSTRUMENT-SPECIFIC DYNAMIC TECHNICAL VERIFICATION */}
+              <DynamicTechnicalVerification instrumentName={activeApp.instrumentName} applicationType={activeApp.applicationType} />
 
               {/* C. PHOTO EVIDENCE & OFFICER REMARKS */}
               <div className="space-y-3">
@@ -391,7 +341,11 @@ export const OfficerDashboard = () => {
                   <span>3. Photo Evidence & Inspection Remarks</span>
                 </h4>
 
-                <div className="flex items-center gap-4 text-xs">
+                <div className="flex items-center gap-3 text-xs flex-wrap">
+                  <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-bold">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    <span>📷 Instrument / Inspection Photo</span>
+                  </div>
                   <div className="flex items-center gap-2 p-3 bg-emerald-50 rounded-xl border border-emerald-200 text-emerald-800 font-bold">
                     <CheckCircle2 className="w-4 h-4 text-emerald-600" />
                     <span>📷 Nameplate Scan Attached</span>
@@ -448,6 +402,45 @@ export const OfficerDashboard = () => {
                     <span>[ FAIL / REJECT ]</span>
                   </button>
                 </div>
+
+                {/* Reason for Failure Selection (Shown when FAIL is selected) */}
+                {outcome === 'FAIL' && (
+                  <div className="p-4 bg-red-50/90 rounded-2xl border border-red-200 space-y-3 animate-in fade-in duration-200 mt-3">
+                    <label className="block font-extrabold text-xs uppercase tracking-wider text-red-900">
+                      Reason for Failure <span className="text-red-600">*</span>
+                    </label>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {[
+                        'MPE exceeded',
+                        'Nameplate mismatch',
+                        'Seal damaged',
+                        'Required marking missing',
+                        'Instrument not functioning',
+                        'Other'
+                      ].map((reason) => (
+                        <label
+                          key={reason}
+                          className={`p-3 rounded-xl border flex items-center gap-2.5 cursor-pointer font-bold transition-all ${
+                            failReason === reason
+                              ? 'bg-red-700 text-white border-red-800 shadow-xs'
+                              : 'bg-white text-red-900 border-red-200 hover:bg-red-100/60'
+                          }`}
+                        >
+                          <input
+                            type="radio"
+                            name="failReason"
+                            value={reason}
+                            checked={failReason === reason}
+                            onChange={(e) => setFailReason(e.target.value)}
+                            className="w-4 h-4 accent-red-700"
+                          />
+                          <span>{reason}</span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#003943]/10">
@@ -471,7 +464,8 @@ export const OfficerDashboard = () => {
             </form>
           </div>
         </div>
-      )}
+      </div>
+    )}
     </div>
   );
 };

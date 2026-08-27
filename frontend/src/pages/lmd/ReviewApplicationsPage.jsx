@@ -7,6 +7,7 @@ import { Table } from '../../components/common/Table';
 import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
+import { DynamicTechnicalVerification } from '../../components/verification/DynamicTechnicalVerification';
 
 export const ReviewApplicationsPage = () => {
   const navigate = useNavigate();
@@ -21,6 +22,7 @@ export const ReviewApplicationsPage = () => {
   const [assignLoading, setAssignLoading] = useState(false);
   const [inspectLoading, setInspectLoading] = useState(false);
   const [inspectionOutcome, setInspectionOutcome] = useState('PASS');
+  const [failReason, setFailReason] = useState('MPE exceeded');
   const [inspectionRemarks, setInspectionRemarks] = useState('Physical field verification completed. All MPE tolerance checks within Rule 11 bounds.');
 
   const pendingReviewApps = applications.filter((app) =>
@@ -440,12 +442,15 @@ export const ReviewApplicationsPage = () => {
                 Offline Physical Test Verification Checklist
               </span>
               <div className="grid grid-cols-2 gap-2 text-xs">
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">☑ Nameplate Checked</div>
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">☑ Model Approved</div>
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">☑ Max Capacity Check</div>
-                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">☑ Lead Seal Affixed</div>
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Nameplate Checked</div>
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Model Approved</div>
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Max Capacity Check</div>
+                <div className="p-2 bg-emerald-50 rounded-lg text-emerald-800 font-bold">✓ Lead Seal Affixed</div>
               </div>
             </div>
+
+            {/* Dynamic Technical Verification Section */}
+            <DynamicTechnicalVerification instrumentName={inspectModalApp.instrumentName} applicationType={inspectModalApp.applicationType} />
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
@@ -476,6 +481,44 @@ export const ReviewApplicationsPage = () => {
                   [ FAIL / REJECT ]
                 </button>
               </div>
+
+              {/* Reason for Failure Options */}
+              {inspectionOutcome === 'FAIL' && (
+                <div className="p-3.5 bg-red-50/90 rounded-2xl border border-red-200 space-y-2.5 animate-in fade-in duration-200 mt-2">
+                  <label className="block font-extrabold text-xs uppercase tracking-wider text-red-900">
+                    Reason for Failure <span className="text-red-600">*</span>
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                    {[
+                      'MPE exceeded',
+                      'Nameplate mismatch',
+                      'Seal damaged',
+                      'Required marking missing',
+                      'Instrument not functioning',
+                      'Other'
+                    ].map((reason) => (
+                      <label
+                        key={reason}
+                        className={`p-2.5 rounded-xl border flex items-center gap-2 cursor-pointer font-bold transition-all ${
+                          failReason === reason
+                            ? 'bg-red-700 text-white border-red-800 shadow-xs'
+                            : 'bg-white text-red-900 border-red-200 hover:bg-red-100/60'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="reviewFailReason"
+                          value={reason}
+                          checked={failReason === reason}
+                          onChange={(e) => setFailReason(e.target.value)}
+                          className="w-3.5 h-3.5 accent-red-700"
+                        />
+                        <span>{reason}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="space-y-1">
@@ -499,10 +542,14 @@ export const ReviewApplicationsPage = () => {
                 loading={inspectLoading}
                 onClick={async () => {
                   setInspectLoading(true);
+                  const finalObs = inspectionOutcome === 'FAIL'
+                    ? `[Rejection Reason: ${failReason}] ${inspectionRemarks}`
+                    : inspectionRemarks;
+
                   await submitVerificationResult({
                     applicationId: inspectModalApp.id,
                     result: inspectionOutcome,
-                    observations: inspectionRemarks,
+                    observations: finalObs,
                     evidencePhotos: ['https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'],
                     officerName: inspectModalApp.assignedOfficerName || 'Inspector Rajesh V. Sharma'
                   });

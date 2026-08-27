@@ -40,8 +40,7 @@ export const Sidebar = () => {
   } else if (activeRole === USER_ROLES.OFFICER) {
     navItems = [
       { to: '/officer', label: 'Officer Dashboard', icon: LayoutDashboard, end: true },
-      { to: '/officer/queue', label: 'Assigned Verification Queue', icon: ClipboardList },
-      { to: '/officer/verify/new', label: 'Record Inspection Result', icon: CheckSquare }
+      { to: '/officer/queue', label: 'Assigned Verification Queue', icon: ClipboardList }
     ];
   } else {
     navItems = [

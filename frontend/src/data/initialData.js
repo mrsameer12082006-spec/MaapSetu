@@ -74,7 +74,7 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Periodic Re-verification',
     submissionDate: '2026-08-20',
     preferredDate: '2026-08-28',
-    status: 'assigned', // submitted | under_review | assigned | in_progress | passed | failed
+    status: 'assigned',
     assignedOfficerId: 'OFF-101',
     assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-22',
@@ -82,13 +82,11 @@ export const INITIAL_APPLICATIONS = [
     inspectionLocation: 'Nagpur MIDC Area, Maharashtra',
     documents: [
       { name: 'Previous_Certificate_2025.pdf', size: '1.2 MB', url: '#' },
-      { name: 'Calibration_PreCheck_Report.pdf', size: '850 KB', url: '#' },
-      { name: 'Factory_Purchase_Invoice.pdf', size: '2.1 MB', url: '#' }
+      { name: 'Calibration_PreCheck_Report.pdf', size: '850 KB', url: '#' }
     ],
     notes: 'Requires heavy standard test weights (20-tonne truck load).',
     timeline: [
       { step: 'Application Submitted', date: '2026-08-20 10:30 AM', actor: 'Business Owner' },
-      { step: 'Under LMD Administrative Review', date: '2026-08-21 02:15 PM', actor: 'LMD Admin' },
       { step: 'Assigned to Inspector Rajesh V. Sharma', date: '2026-08-22 11:00 AM', actor: 'LMD Admin' }
     ]
   },
@@ -100,17 +98,16 @@ export const INITIAL_APPLICATIONS = [
     applicationType: 'Initial Verification',
     submissionDate: '2026-08-24',
     preferredDate: '2026-08-30',
-    status: 'submitted',
-    assignedOfficerId: null,
-    assignedOfficerName: null,
-    assignedDate: null,
-    scheduledInspectionDate: null,
-    inspectionLocation: 'Sector 17, Chandigarh',
+    status: 'assigned',
+    assignedOfficerId: 'OFF-101',
+    assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
+    assignedDate: '2026-08-25',
+    scheduledInspectionDate: '2026-08-29',
+    inspectionLocation: 'Sector 17, Commercial Complex, Chandigarh',
     documents: [
-      { name: 'Model_Approval_Cert_MHA.pdf', size: '1.8 MB', url: '#' },
-      { name: 'OEM_Test_Certificate.pdf', size: '600 KB', url: '#' }
+      { name: 'Model_Approval_Cert_MHA.pdf', size: '1.8 MB', url: '#' }
     ],
-    notes: 'New retail counter scale installation.',
+    notes: 'Commercial retail digital scale for grocery & retail counter.',
     timeline: [
       { step: 'Application Submitted', date: '2026-08-24 04:45 PM', actor: 'Business Owner' }
     ]
@@ -124,44 +121,83 @@ export const INITIAL_APPLICATIONS = [
     submissionDate: '2026-08-18',
     preferredDate: '2026-08-22',
     status: 'in_progress',
-    assignedOfficerId: 'OFF-102',
-    assignedOfficerName: 'Suresh Kumar (GATC Officer - Ambala Test Centre)',
+    assignedOfficerId: 'OFF-101',
+    assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
     assignedDate: '2026-08-19',
     scheduledInspectionDate: '2026-08-25',
-    inspectionLocation: 'NH-44 Expressway, Ambala',
+    inspectionLocation: 'NH-44 Expressway Fuel Station, Ambala',
     documents: [
       { name: 'Repair_Notice_Form_B.pdf', size: '920 KB', url: '#' }
     ],
-    notes: 'Flow meter valve replaced. Needs volumetric measure verification (5L, 20L check).',
+    notes: 'Multi-product fuel dispenser (Petrol / Diesel). Volumetric measure check required.',
     timeline: [
-      { step: 'Application Submitted', date: '2026-08-18 09:00 AM', actor: 'Business Owner' },
-      { step: 'LMD Review Completed', date: '2026-08-18 11:30 AM', actor: 'LMD Admin' },
-      { step: 'Assigned to GATC Officer Suresh Kumar', date: '2026-08-19 10:00 AM', actor: 'LMD Admin' },
-      { step: 'Field Inspection In Progress', date: '2026-08-25 09:30 AM', actor: 'GATC Officer' }
+      { step: 'Application Submitted', date: '2026-08-18 09:00 AM', actor: 'Business Owner' }
     ]
   },
   {
     id: 'APP-2026-1004',
     instrumentId: 'INST-2026-004',
-    instrumentName: 'Industrial Liquid Flowmeter (EM-551042-X)',
+    instrumentName: 'Industrial Automatic Liquid Flowmeter (EM-551042-X)',
     applicantName: 'Apex Logistics & Freight Corp',
     applicationType: 'Periodic Re-verification',
-    submissionDate: '2026-03-01',
-    preferredDate: '2026-03-04',
-    status: 'passed',
-    assignedOfficerId: 'OFF-103',
-    assignedOfficerName: 'Dr. Meenakshi Sundaram (LMO Senior Tech Officer)',
-    assignedDate: '2026-03-02',
-    scheduledInspectionDate: '2026-03-05',
-    inspectionLocation: 'Navi Mumbai Port Terminal',
+    submissionDate: '2026-08-21',
+    preferredDate: '2026-08-27',
+    status: 'assigned',
+    assignedOfficerId: 'OFF-101',
+    assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
+    assignedDate: '2026-08-22',
+    scheduledInspectionDate: '2026-08-29',
+    inspectionLocation: 'Navi Mumbai Port Terminal Pipeline',
     documents: [
       { name: 'Port_Safety_Clearance.pdf', size: '3.1 MB', url: '#' }
     ],
-    notes: 'High precision mass flowmeter inspection passed within MPE bounds (+/-0.1%).',
+    notes: 'Mass flowmeter line testing with reference prover loop.',
     timeline: [
-      { step: 'Application Submitted', date: '2026-03-01 02:00 PM', actor: 'Business Owner' },
-      { step: 'Assigned to Dr. Meenakshi Sundaram', date: '2026-03-02 10:00 AM', actor: 'LMD Admin' },
-      { step: 'Inspection Passed & Certified', date: '2026-03-05 04:30 PM', actor: 'Dr. Meenakshi Sundaram' }
+      { step: 'Application Submitted', date: '2026-08-21 02:00 PM', actor: 'Business Owner' }
+    ]
+  },
+  {
+    id: 'APP-2026-1005',
+    instrumentId: 'INST-2026-005',
+    instrumentName: 'Pre-packaged Quantity Check Scale (PK-991044)',
+    applicantName: 'Apex Logistics & Freight Corp',
+    applicationType: 'Initial Verification',
+    submissionDate: '2026-08-23',
+    preferredDate: '2026-08-28',
+    status: 'assigned',
+    assignedOfficerId: 'OFF-101',
+    assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
+    assignedDate: '2026-08-24',
+    scheduledInspectionDate: '2026-08-30',
+    inspectionLocation: 'Packaging Plant Unit 4, MIDC Warehouse',
+    documents: [
+      { name: 'Package_Compliance_Doc.pdf', size: '1.5 MB', url: '#' }
+    ],
+    notes: 'Check net quantity package filling tare & sample weight deviation.',
+    timeline: [
+      { step: 'Application Submitted', date: '2026-08-23 11:15 AM', actor: 'Business Owner' }
+    ]
+  },
+  {
+    id: 'APP-2026-1006',
+    instrumentId: 'INST-2026-006',
+    instrumentName: 'Precision Laboratory Analytical Balance (AL-20045)',
+    applicantName: 'Apex Logistics & Freight Corp',
+    applicationType: 'Periodic Re-verification',
+    submissionDate: '2026-08-22',
+    preferredDate: '2026-08-29',
+    status: 'assigned',
+    assignedOfficerId: 'OFF-101',
+    assignedOfficerName: 'Inspector Rajesh V. Sharma (LMO Nagpur Zone)',
+    assignedDate: '2026-08-23',
+    scheduledInspectionDate: '2026-08-30',
+    inspectionLocation: 'Quality Control Analytical Testing Lab 2',
+    documents: [
+      { name: 'NABL_Calibration_Report.pdf', size: '2.4 MB', url: '#' }
+    ],
+    notes: 'Class I analytical balance (0.0001g resolution) calibration.',
+    timeline: [
+      { step: 'Application Submitted', date: '2026-08-22 03:30 PM', actor: 'Business Owner' }
     ]
   }
 ];
