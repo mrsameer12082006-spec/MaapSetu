@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Scale, Building2, UserCheck, ShieldCheck, ArrowRight, Lock, Sparkles, ArrowUpRight, ChevronDown, CheckCircle2, UserPlus } from 'lucide-react';
+import { Scale, Building2, UserCheck, ShieldCheck, ArrowRight, Lock, Sparkles, ArrowUpRight, ChevronDown, CheckCircle2, UserPlus, AlertCircle } from 'lucide-react';
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
 
 export const LoginPage = () => {
@@ -8,45 +8,59 @@ export const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get('role') || USER_ROLES.BUSINESS;
 
-  const { loginAsRole } = useAuth();
+  const { loginAsRole, registerUser } = useAuth();
   const [selectedRole, setSelectedRole] = useState(defaultRole);
   const [username, setUsername] = useState('v.mehta@apexlogistics.in');
-  const [password, setPassword] = useState('••••••••••••');
+  const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
 
   // Sign Up Mode State (Available for Business Role)
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState('Vikramaditya Mehta');
   const [signUpEmail, setSignUpEmail] = useState('v.mehta@apexlogistics.in');
   const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
-  const [signUpPassword, setSignUpPassword] = useState('••••••••••••');
-  const [confirmPassword, setConfirmPassword] = useState('••••••••••••');
+  const [signUpPassword, setSignUpPassword] = useState('password123');
+  const [confirmPassword, setConfirmPassword] = useState('password123');
 
   // Success Feedback Banners
   const [signUpSuccess, setSignUpSuccess] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setLoginSuccess(false);
     setSignUpSuccess(false);
+    setErrorMsg('');
 
     if (isSignUp) {
-      // Handle Business Registration Submission
-      setTimeout(() => {
-        loginAsRole(USER_ROLES.BUSINESS);
+      if (signUpPassword !== confirmPassword) {
+        setErrorMsg('Passwords do not match.');
         setLoading(false);
+        return;
+      }
+      
+      try {
+        await registerUser(signUpEmail, signUpPassword, {
+          name: fullName,
+          phone: mobileNumber,
+          role: USER_ROLES.BUSINESS,
+          organization: 'Apex Logistics & Freight Corp', // Optional: could be a form field
+        });
+        
         setSignUpSuccess(true);
         setTimeout(() => {
           navigate('/business');
         }, 800);
-      }, 600);
-    } else {
-      // Handle Portal Sign In Submission
-      setTimeout(() => {
-        loginAsRole(selectedRole);
+      } catch (error) {
+        setErrorMsg(error.message || 'Registration failed.');
+      } finally {
         setLoading(false);
+      }
+    } else {
+      try {
+        await loginAsRole(username, password);
         setLoginSuccess(true);
         setTimeout(() => {
           if (selectedRole === USER_ROLES.BUSINESS) {
@@ -57,7 +71,11 @@ export const LoginPage = () => {
             navigate('/officer');
           }
         }, 800);
-      }, 400);
+      } catch (error) {
+        setErrorMsg('Invalid login credentials. ' + (error.message || ''));
+      } finally {
+        setLoading(false);
+      }
     }
   };
 
@@ -66,9 +84,10 @@ export const LoginPage = () => {
     setIsSignUp(false);
     setLoginSuccess(false);
     setSignUpSuccess(false);
+    setErrorMsg('');
     if (roleKey === USER_ROLES.BUSINESS) setUsername('v.mehta@apexlogistics.in');
-    else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('controller.lmd@maharashtra.gov.in');
-    else if (roleKey === USER_ROLES.OFFICER) setUsername('r.sharma@lmd.gov.in');
+    else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('admin.ngp@maapsetu.gov.in');
+    else if (roleKey === USER_ROLES.OFFICER) setUsername('r.sharma.lmo@maapsetu.gov.in');
   };
 
   return (
@@ -167,8 +186,15 @@ export const LoginPage = () => {
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
             <span>
-              Login Successful as {selectedRole === USER_ROLES.BUSINESS ? 'Business Owner' : selectedRole === USER_ROLES.LMD_ADMIN ? 'LMD Admin' : 'LMO Officer'}!
+              Login Successful!
             </span>
+          </div>
+        )}
+
+        {errorMsg && (
+          <div className="p-4 bg-red-50 border border-red-300 rounded-2xl text-red-800 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in">
+            <AlertCircle className="w-5 h-5 text-red-600 shrink-0" />
+            <span>{errorMsg}</span>
           </div>
         )}
 
@@ -266,6 +292,7 @@ export const LoginPage = () => {
                   setIsSignUp(false);
                   setLoginSuccess(false);
                   setSignUpSuccess(false);
+                  setErrorMsg('');
                 }}
                 className="text-[#00959C] font-bold hover:underline"
               >
@@ -293,8 +320,8 @@ export const LoginPage = () => {
                   selectedRole === USER_ROLES.BUSINESS
                     ? 'e.g. v.mehta@apexlogistics.in or +91 98765 43210'
                     : selectedRole === USER_ROLES.LMD_ADMIN
-                    ? 'e.g. controller.lmd@maharashtra.gov.in or EMP-LMD-9041'
-                    : 'e.g. r.sharma@lmd.gov.in or OFFICER-NGP-442'
+                    ? 'e.g. admin.ngp@maapsetu.gov.in or EMP-LMD-9041'
+                    : 'e.g. r.sharma.lmo@maapsetu.gov.in or OFFICER-NGP-442'
                 }
                 required
                 className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-sm font-semibold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
@@ -336,6 +363,7 @@ export const LoginPage = () => {
                       setIsSignUp(true);
                       setLoginSuccess(false);
                       setSignUpSuccess(false);
+                      setErrorMsg('');
                     }}
                     className="text-[#00959C] font-bold hover:underline"
                   >

@@ -1,4 +1,5 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../services/supabase';
 
 const AuthContext = createContext();
 
@@ -8,60 +9,116 @@ export const USER_ROLES = {
   OFFICER: 'officer'
 };
 
-const MOCK_USERS = {
-  [USER_ROLES.BUSINESS]: {
-    id: 'USR-BIZ-01',
-    name: 'Vikramaditya Mehta',
-    organization: 'Apex Logistics & Freight Corp',
-    role: USER_ROLES.BUSINESS,
-    roleTitle: 'Business / Instrument Owner',
-    email: 'v.mehta@apexlogistics.in',
-    avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-    jurisdiction: 'Maharashtra & All India Ports'
-  },
-  [USER_ROLES.LMD_ADMIN]: {
-    id: 'USR-LMD-01',
-    name: 'Sunita Prabhakar',
-    organization: 'Legal Metrology Department, Govt of Maharashtra',
-    role: USER_ROLES.LMD_ADMIN,
-    roleTitle: 'LMD Administrator',
-    email: 'controller.lmd@maharashtra.gov.in',
-    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
-    jurisdiction: 'State Controller Division'
-  },
-  [USER_ROLES.OFFICER]: {
-    id: 'OFF-101',
-    name: 'Inspector Rajesh V. Sharma',
-    organization: 'Legal Metrology Inspectorate (Nagpur Zone)',
-    role: USER_ROLES.OFFICER,
-    roleTitle: 'LMO / GATC Verification Officer',
-    email: 'r.sharma@lmd.gov.in',
-    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-    jurisdiction: 'Nagpur Industrial Division'
-  }
-};
-
 export const AuthProvider = ({ children }) => {
-  const getSavedRole = () => {
-    const saved = typeof window !== 'undefined' ? localStorage.getItem('maapsetu_role') : null;
-    if (saved && MOCK_USERS[saved]) return saved;
-    return USER_ROLES.BUSINESS;
-  };
+  const [currentRole, setCurrentRole] = useState(null);
+  const [user, setUser] = useState(null);
+  const [session, setSession] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const [currentRole, setCurrentRole] = useState(getSavedRole);
-  const [user, setUser] = useState(() => MOCK_USERS[getSavedRole()]);
-
-  const loginAsRole = (roleKey) => {
-    if (MOCK_USERS[roleKey]) {
-      setCurrentRole(roleKey);
-      setUser(MOCK_USERS[roleKey]);
-      localStorage.setItem('maapsetu_role', roleKey);
+  // Fetch full profile from DB
+  const loadUserProfile = async (userId) => {
+    try {
+      const { data: profile, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', userId)
+        .single();
+        
+      if (error) {
+        console.error('Error fetching profile:', error);
+        return null;
+      }
+      return profile;
+    } catch (err) {
+      console.error('Unexpected error loading profile:', err);
+      return null;
     }
   };
 
-  const logout = () => {
-    setCurrentRole(null);
+  useEffect(() => {
+    // Check active session
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      setSession(session);
+      if (session?.user) {
+        const profile = await loadUserProfile(session.user.id);
+        if (profile) {
+          setUser({ ...session.user, ...profile });
+          setCurrentRole(profile.role);
+          localStorage.setItem('maapsetu_role', profile.role);
+        }
+      }
+      setLoading(false);
+    });
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, session) => {
+      setSession(session);
+      if (session?.user) {
+        const profile = await loadUserProfile(session.user.id);
+        if (profile) {
+          setUser({ ...session.user, ...profile });
+          setCurrentRole(profile.role);
+          localStorage.setItem('maapsetu_role', profile.role);
+        }
+      } else {
+        setUser(null);
+        setCurrentRole(null);
+        localStorage.removeItem('maapsetu_role');
+      }
+      setLoading(false);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
+  const loginAsRole = async (email, password) => {
+    const { data, error } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
+    if (error) throw error;
+    return data;
+  };
+
+  const registerUser = async (email, password, profileData) => {
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: profileData // Stored in raw_user_meta_data if needed, but we rely on a trigger or manual insert
+      }
+    });
+    if (error) throw error;
+
+    if (data?.user) {
+      // Insert profile immediately after successful signup
+      const { error: profileError } = await supabase.from('profiles').insert([
+        {
+          id: data.user.id,
+          email: email,
+          name: profileData.name,
+          phone: profileData.phone,
+          role: profileData.role,
+          organization: profileData.organization,
+          is_active: true
+        }
+      ]);
+      if (profileError) {
+        console.error('Profile creation failed:', profileError);
+        throw profileError;
+      }
+    }
+    
+    return data;
+  };
+
+  const logout = async () => {
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      console.error('Logout error:', error);
+    }
     setUser(null);
+    setCurrentRole(null);
     localStorage.removeItem('maapsetu_role');
   };
 
@@ -70,12 +127,15 @@ export const AuthProvider = ({ children }) => {
       value={{
         currentRole,
         user,
+        session,
+        loading,
         loginAsRole,
+        registerUser,
         logout,
         USER_ROLES
       }}
     >
-      {children}
+      {!loading && children}
     </AuthContext.Provider>
   );
 };

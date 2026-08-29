@@ -57,6 +57,8 @@ export const OfficerDashboard = () => {
   const assignedQueue = applications.filter((a) => a.status === 'assigned' || a.status === 'in_progress');
   const completedQueue = applications.filter((a) => a.status === 'passed' || a.status === 'failed');
 
+  const [technicalResults, setTechnicalResults] = useState({});
+
   const handleToggleChecklist = (key) => {
     setChecklist((prev) => ({ ...prev, [key]: !prev[key] }));
   };
@@ -70,19 +72,17 @@ export const OfficerDashboard = () => {
     if (!activeApp) return;
     setSubmitting(true);
 
-    const finalRemarks = outcome === 'FAIL'
-      ? `[Rejection Reason: ${failReason}] ${remarks}`
-      : remarks;
-
     await submitVerificationResult({
       applicationId: activeApp.id,
-      result: outcome,
-      observations: finalRemarks,
-      evidencePhotos: [
+      outcome: outcome,
+      checklist_results: checklist,
+      technical_test_results: technicalResults,
+      officer_remarks: remarks,
+      rejection_reason: outcome === 'FAIL' ? failReason : null,
+      photo_evidence_urls: [
         'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
         'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
-      ],
-      officerName: user?.name || 'Inspector Rajesh V. Sharma'
+      ]
     });
 
     setSubmitting(false);
@@ -332,7 +332,11 @@ export const OfficerDashboard = () => {
               </div>
 
               {/* B. INSTRUMENT-SPECIFIC DYNAMIC TECHNICAL VERIFICATION */}
-              <DynamicTechnicalVerification instrumentName={activeApp.instrumentName} applicationType={activeApp.applicationType} />
+              <DynamicTechnicalVerification 
+                instrumentName={activeApp.instrumentName} 
+                applicationType={activeApp.applicationType} 
+                onDataChange={setTechnicalResults}
+              />
 
               {/* C. PHOTO EVIDENCE & OFFICER REMARKS */}
               <div className="space-y-3">

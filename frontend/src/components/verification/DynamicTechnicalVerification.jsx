@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FileText, Fuel, Droplets, Scale, Gauge, Sparkles } from 'lucide-react';
 
-export const DynamicTechnicalVerification = ({ instrumentName = '', applicationType = '' }) => {
+export const DynamicTechnicalVerification = ({ instrumentName = '', applicationType = '', onDataChange }) => {
   const nameLower = instrumentName.toLowerCase();
 
   // Detect Instrument Category
@@ -32,9 +32,9 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
   const [counterMpe, setCounterMpe] = useState('PASS - Within ±1.5g MPE Class III');
 
   // State for Pre-packaged Scale
-  const [sample1, setSample1] = useState('1.002 kg');
-  const [sample2, setSample2] = useState('0.998 kg');
-  const [sample3, setSample3] = useState('1.001 kg');
+  const [sample1, setSample1] = useState('1.002');
+  const [sample2, setSample2] = useState('0.998');
+  const [sample3, setSample3] = useState('1.001');
 
   // State for Lab Balance
   const [obsMass, setObsMass] = useState('100.0002 g');
@@ -44,6 +44,64 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
   const [wbZero, setWbZero] = useState('0.0 kg');
   const [wbHalf, setWbHalf] = useState('29,998.5 kg');
   const [wbMax, setWbMax] = useState('59,994.0 kg');
+
+  // Expose state up to parent via onDataChange
+  useEffect(() => {
+    if (!onDataChange) return;
+
+    if (isFuelDispenser) {
+      onDataChange({
+        category: 'fuel_dispenser',
+        fuelProduct, nozzleId, fuelZeroReset, dispensedVolume, fuelMpeResult
+      });
+    } else if (isFlowmeter) {
+      onDataChange({
+        category: 'flowmeter',
+        flowRate, referenceVolume, measuredVolume, flowmeterMpe
+      });
+    } else if (isCounterScale) {
+      onDataChange({
+        category: 'retail_scale',
+        counterZero, counterHalf, counterMax, counterMpe
+      });
+    } else if (isPrePackaged) {
+      const s1 = parseFloat(sample1) || 0;
+      const s2 = parseFloat(sample2) || 0;
+      const s3 = parseFloat(sample3) || 0;
+      const avg = ((s1 + s2 + s3) / 3).toFixed(4);
+      onDataChange({
+        category: 'package_scale',
+        sample1, sample2, sample3, calculatedAverage: `${avg} kg`
+      });
+    } else if (isLabBalance) {
+      onDataChange({
+        category: 'lab_balance',
+        obsMass, labMpe
+      });
+    } else {
+      onDataChange({
+        category: 'weighbridge',
+        wbZero, wbHalf, wbMax
+      });
+    }
+  }, [
+    isFuelDispenser, isFlowmeter, isCounterScale, isPrePackaged, isLabBalance,
+    fuelProduct, nozzleId, fuelZeroReset, dispensedVolume, fuelMpeResult,
+    flowRate, referenceVolume, measuredVolume, flowmeterMpe,
+    counterZero, counterHalf, counterMax, counterMpe,
+    sample1, sample2, sample3,
+    obsMass, labMpe,
+    wbZero, wbHalf, wbMax,
+    onDataChange
+  ]);
+
+  // Calculated average helper
+  const calculateAverage = () => {
+    const s1 = parseFloat(sample1) || 0;
+    const s2 = parseFloat(sample2) || 0;
+    const s3 = parseFloat(sample3) || 0;
+    return ((s1 + s2 + s3) / 3).toFixed(4);
+  };
 
   // 🔴 1. FUEL DISPENSING METER
   if (isFuelDispenser) {
@@ -200,7 +258,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
 
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs">
           <div className="space-y-1">
-            <label className="block font-bold text-[#003943]">Sample 1 Weight</label>
+            <label className="block font-bold text-[#003943]">Sample 1 Weight (kg)</label>
             <input
               type="text"
               value={sample1}
@@ -210,7 +268,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
           </div>
 
           <div className="space-y-1">
-            <label className="block font-bold text-[#003943]">Sample 2 Weight</label>
+            <label className="block font-bold text-[#003943]">Sample 2 Weight (kg)</label>
             <input
               type="text"
               value={sample2}
@@ -220,7 +278,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
           </div>
 
           <div className="space-y-1">
-            <label className="block font-bold text-[#003943]">Sample 3 Weight</label>
+            <label className="block font-bold text-[#003943]">Sample 3 Weight (kg)</label>
             <input
               type="text"
               value={sample3}
@@ -231,7 +289,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
         </div>
 
         <div className="p-3 bg-white rounded-xl border border-yellow-200 text-xs font-bold text-[#003943] flex justify-between items-center">
-          <span>Calculated Average Net Weight: 1.0003 kg</span>
+          <span>Calculated Average Net Weight: {calculateAverage()} kg</span>
           <span className="text-emerald-800 bg-emerald-100 px-2.5 py-0.5 rounded-full text-[11px]">
             PASS - Within ±1.5g Permissible Error
           </span>
@@ -300,7 +358,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
           <div className="space-y-1">
             <label className="block font-bold text-[#003943]">
-              Test 1: Zero Indication <span className="text-gray-500 font-normal">(Expected: 0.000 kg)</span>
+              Zero Error Test <span className="text-gray-500 font-normal">(Expected: 0.000 kg)</span>
             </label>
             <input
               type="text"
@@ -312,7 +370,19 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
 
           <div className="space-y-1">
             <label className="block font-bold text-[#003943]">
-              Test 2: Max Capacity Test <span className="text-gray-500 font-normal">(Target: 30.000 kg)</span>
+              Half Capacity Test <span className="text-gray-500 font-normal">(Std Wt: 15.000 kg)</span>
+            </label>
+            <input
+              type="text"
+              value={counterHalf}
+              onChange={(e) => setCounterHalf(e.target.value)}
+              className="w-full bg-white border border-[#003943]/20 rounded-xl px-3 py-2.5 font-mono font-bold text-[#003943]"
+            />
+          </div>
+
+          <div className="space-y-1">
+            <label className="block font-bold text-[#003943]">
+              Max Capacity Eccentricity <span className="text-gray-500 font-normal">(Target: 30.000 kg)</span>
             </label>
             <input
               type="text"
@@ -322,9 +392,9 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
             />
           </div>
 
-          <div className="space-y-1 sm:col-span-2">
+          <div className="space-y-1">
             <label className="block font-bold text-[#003943]">
-              Test 3: Tare & MPE Compliance Check
+              MPE Compliance Result
             </label>
             <input
               type="text"
@@ -338,23 +408,23 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
     );
   }
 
-  // 🟢 6. HEAVY ELECTRONIC WEIGHBRIDGE (DEFAULT)
+  // 🔵 6. HEAVY ELECTRONIC WEIGHBRIDGE (DEFAULT)
   return (
-    <div className="space-y-4 bg-slate-50/80 p-4 sm:p-5 rounded-2xl border border-slate-200">
+    <div className="space-y-4 bg-slate-50/60 p-4 sm:p-5 rounded-2xl border border-slate-200">
       <div className="flex items-center justify-between border-b border-slate-200 pb-2">
         <h4 className="font-serif font-bold text-base text-[#003943] flex items-center gap-2">
-          <FileText className="w-5 h-5 text-[#00959C]" />
-          <span>2. Weighbridge Rule-Based Test Results (Rules 2011 MPE Specs)</span>
+          <Scale className="w-5 h-5 text-slate-600" />
+          <span>2. Weighbridge Load & Eccentricity Tests</span>
         </h4>
-        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-900 text-[10px] font-bold uppercase">
-          Heavy Industrial Weighbridge
+        <span className="px-2.5 py-0.5 rounded-full bg-slate-200 text-slate-700 text-[10px] font-bold uppercase">
+          Heavy Industrial
         </span>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
         <div className="space-y-1">
           <label className="block font-bold text-[#003943]">
-            Test 1: Zero Load & Repeatability <span className="text-gray-500 font-normal">(Expected: 0.0 kg)</span>
+            Zero Tracking Test <span className="text-gray-500 font-normal">(Expected: 0.0 kg)</span>
           </label>
           <input
             type="text"
@@ -366,7 +436,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
 
         <div className="space-y-1">
           <label className="block font-bold text-[#003943]">
-            Test 2: Half Load Eccentricity <span className="text-gray-500 font-normal">(Expected: 30,000.0 kg)</span>
+            Eccentricity Test (Corner Load) <span className="text-gray-500 font-normal">(Target: 30,000.0 kg)</span>
           </label>
           <input
             type="text"
@@ -378,7 +448,7 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
 
         <div className="space-y-1">
           <label className="block font-bold text-[#003943]">
-            Test 3: Max Load Capacity <span className="text-gray-500 font-normal">(Expected: 60,000.0 kg)</span>
+            Maximum Load MPE Check <span className="text-gray-500 font-normal">(Target: 60,000.0 kg)</span>
           </label>
           <input
             type="text"
@@ -390,12 +460,12 @@ export const DynamicTechnicalVerification = ({ instrumentName = '', applicationT
 
         <div className="space-y-1">
           <label className="block font-bold text-[#003943]">
-            Test 4: MPE Error Limit Check
+            Overall System Result
           </label>
           <input
             type="text"
+            value="PASS - Within Limits"
             readOnly
-            value="PASS - Within Rule 11 MPE Limits"
             className="w-full bg-emerald-50 border border-emerald-300 text-emerald-900 rounded-xl px-3 py-2.5 font-mono font-bold"
           />
         </div>
