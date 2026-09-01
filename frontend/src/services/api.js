@@ -153,20 +153,18 @@ export const mockApiService = {
     const { data, error } = await supabase.from('applications').insert([payload]).select().single();
     if (error) throw error;
 
-    // Timeline insert
-    await supabase.from('app_timeline').insert([{
-      application_id: data.id,
-      event_type: 'SUBMISSION',
-      step: 'Application Submitted',
-      actor_user_id: userData.user.id,
-      actor_role: 'business'
-    }]);
-
     return {
       id: data.id,
-      ...applicationData,
-      status: 'submitted',
-      submissionDate: data.created_at
+      applicationNumber: data.application_number,
+      applicantId: data.applicant_id,
+      instrumentId: data.instrument_id,
+      applicationType: data.application_type,
+      status: data.status,
+      preferredDate: data.preferred_date,
+      inspectionLocation: data.inspection_location,
+      notes: data.notes,
+      submissionDate: data.created_at,
+      documents: data.documents
     };
   },
 

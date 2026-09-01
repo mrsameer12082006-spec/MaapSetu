@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { Search, FileCheck, UserCheck, Eye, Check, X, MapPin, FileText, AlertCircle, Award, CheckSquare, ShieldCheck } from 'lucide-react';
 import { useData } from '../../context/DataContext';
@@ -24,6 +24,13 @@ export const ReviewApplicationsPage = () => {
   const [inspectionOutcome, setInspectionOutcome] = useState('PASS');
   const [failReason, setFailReason] = useState('MPE exceeded');
   const [inspectionRemarks, setInspectionRemarks] = useState('Physical field verification completed. All MPE tolerance checks within Rule 11 bounds.');
+
+  // Guarantee the selectedOfficerId snaps to a real UUID when data loads
+  useEffect(() => {
+    if (officers?.length > 0 && selectedOfficerId === 'OFF-101') {
+      setSelectedOfficerId(officers[0].id);
+    }
+  }, [officers, selectedOfficerId]);
 
   const pendingReviewApps = applications.filter((app) =>
     app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||

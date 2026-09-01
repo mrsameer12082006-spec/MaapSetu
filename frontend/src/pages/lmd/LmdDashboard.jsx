@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -31,10 +31,16 @@ export const LmdDashboard = () => {
   // State for Review & Assignment Modal
   const [selectedApp, setSelectedApp] = useState(null);
   const [verifierType, setVerifierType] = useState('LMO'); // 'LMO' or 'GATC'
-  const [selectedOfficerId, setSelectedOfficerId] = useState('OFF-101');
+  const [selectedOfficerId, setSelectedOfficerId] = useState(officers[0]?.id || 'OFF-101');
   const [scheduledDate, setScheduledDate] = useState('2026-08-30');
   const [assignmentNotes, setAssignmentNotes] = useState('Inspect heavy standard test weights on site.');
   const [assignLoading, setAssignLoading] = useState(false);
+
+  useEffect(() => {
+    if (officers?.length > 0 && selectedOfficerId === 'OFF-101') {
+      setSelectedOfficerId(officers[0].id);
+    }
+  }, [officers, selectedOfficerId]);
 
   // State for Final Approval Modal
   const [reviewRecordApp, setReviewRecordApp] = useState(null);

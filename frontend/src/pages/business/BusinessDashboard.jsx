@@ -1,28 +1,62 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Camera,
   CheckCircle2,
   AlertTriangle,
   FileText,
   ShieldCheck,
   ArrowRight,
-  PlusCircle,
   Clock,
-  UserCheck,
-  Layers,
-  ChevronRight
+  UserCheck
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
+import { useData } from '../../context/DataContext';
 
 export const BusinessDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
-
-  // Mode state: Default to EMPTY SECTIONS as requested by user
-  const [showSampleData, setShowSampleData] = useState(false);
+  const { instruments, applications, certificates } = useData();
 
   const userName = user?.name ? user.name.split(' ')[0] : 'Vikramaditya';
+
+  // --- DATA DERIVATION ---
+  
+  // 1. My Instruments
+  const myInstruments = instruments.filter(inst => inst.ownerId === user?.id);
+
+  // 2. Certified Instruments (Join with certificates table)
+  const myCertifiedInstruments = myInstruments.filter(inst => {
+    return certificates.some(cert => cert.instrumentId === inst.id && cert.status === 'VERIFIED');
+  }).map(inst => {
+    const cert = certificates.find(c => c.instrumentId === inst.id && c.status === 'VERIFIED');
+    return { ...inst, certificate: cert };
+  });
+
+  // 3. Expiring Soon (< 30 days)
+  const today = new Date();
+  const thirtyDaysFromNow = new Date();
+  thirtyDaysFromNow.setDate(today.getDate() + 30);
+
+  const myExpiringCertificates = certificates.filter(cert => {
+    if (cert.status !== 'VERIFIED') return false;
+    if (!myInstruments.some(inst => inst.id === cert.instrumentId)) return false;
+    
+    const expiry = new Date(cert.expiryDate);
+    return expiry > today && expiry <= thirtyDaysFromNow;
+  }).map(cert => {
+    const inst = myInstruments.find(i => i.id === cert.instrumentId);
+    return { ...cert, instrument: inst };
+  });
+
+  // 4. In Progress Applications
+  const myApplications = applications.filter(app => app.applicantId === user?.id);
+  const myInProgressApplications = myApplications.filter(app => 
+    ['submitted', 'under_review', 'assigned', 'in_progress'].includes(app.status)
+  );
+
+  const certifiedCount = myCertifiedInstruments.length;
+  const expiringCount = myExpiringCertificates.length;
+  const inProgressCount = myInProgressApplications.length;
 
   return (
     <div className="w-full space-y-7 selection:bg-[#02B7BF] selection:text-white pb-16">
@@ -55,7 +89,7 @@ export const BusinessDashboard = () => {
         {/* Card 1: Certified */}
         <div className="bg-white rounded-2xl p-5 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-3xl sm:text-4xl font-serif font-bold text-[#003943]">
-            {showSampleData ? 5 : 0}
+            {certifiedCount}
           </p>
           <p className="text-xs sm:text-sm font-semibold text-[#003943]/70">
             Certified
@@ -65,7 +99,7 @@ export const BusinessDashboard = () => {
         {/* Card 2: Expiring soon */}
         <div className="bg-white rounded-2xl p-5 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-3xl sm:text-4xl font-serif font-bold text-[#003943]">
-            {showSampleData ? 2 : 0}
+            {expiringCount}
           </p>
           <p className="text-xs sm:text-sm font-semibold text-[#003943]/70">
             Expiring soon
@@ -75,7 +109,7 @@ export const BusinessDashboard = () => {
         {/* Card 3: In progress */}
         <div className="bg-white rounded-2xl p-5 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-3xl sm:text-4xl font-serif font-bold text-[#003943]">
-            {showSampleData ? 4 : 0}
+            {inProgressCount}
           </p>
           <p className="text-xs sm:text-sm font-semibold text-[#003943]/70">
             In progress
@@ -97,7 +131,7 @@ export const BusinessDashboard = () => {
           </button>
         </div>
 
-        {!showSampleData ? (
+        {certifiedCount === 0 ? (
           /* EMPTY STATE CARD */
           <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
             <div className="w-12 h-12 rounded-full bg-[#E0F5F6] text-[#00959C] flex items-center justify-center mx-auto mb-1">
@@ -109,43 +143,28 @@ export const BusinessDashboard = () => {
             </p>
           </div>
         ) : (
-          /* SAMPLE POPULATED ITEMS */
+          /* POPULATED ITEMS */
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-5 h-5" />
+            {myCertifiedInstruments.map((inst) => (
+              <div key={inst.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
+                    <CheckCircle2 className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{inst.instrumentName}</h4>
+                    <p className="text-xs text-[#003943]/60 font-mono">{inst.certificate.certificateNumber} • Valid until {inst.certificate.expiryDate}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Retail Counter Scale</h4>
-                  <p className="text-xs text-[#003943]/60 font-mono">RC-002391-IN · Valid until 2027-01-19</p>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/verify/${inst.certificate.id}`)}
+                  className="px-4 py-2 rounded-full bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors shrink-0"
+                >
+                  View certificate
+                </button>
               </div>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors shrink-0"
-              >
-                View certificate
-              </button>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-emerald-100 text-emerald-700 flex items-center justify-center shrink-0">
-                  <CheckCircle2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Digital Platform Scale</h4>
-                  <p className="text-xs text-[#003943]/60 font-mono">DP-556012-IN · Valid until 2027-03-02</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors shrink-0"
-              >
-                View certificate
-              </button>
-            </div>
+            ))}
           </div>
         )}
       </div>
@@ -164,7 +183,7 @@ export const BusinessDashboard = () => {
           </button>
         </div>
 
-        {!showSampleData ? (
+        {expiringCount === 0 ? (
           /* EMPTY STATE CARD */
           <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
             <div className="w-12 h-12 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center mx-auto mb-1">
@@ -176,43 +195,32 @@ export const BusinessDashboard = () => {
             </p>
           </div>
         ) : (
-          /* SAMPLE POPULATED ITEMS */
+          /* POPULATED ITEMS */
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-5 h-5" />
+            {myExpiringCertificates.map((cert) => {
+              // Calculate days left
+              const daysLeft = Math.ceil((new Date(cert.expiryDate) - today) / (1000 * 60 * 60 * 24));
+              
+              return (
+                <div key={cert.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
+                  <div className="flex items-center gap-3.5">
+                    <div className="w-10 h-10 rounded-xl bg-red-100 text-red-700 flex items-center justify-center shrink-0">
+                      <AlertTriangle className="w-5 h-5" />
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-[#003943] text-sm sm:text-base">{cert.instrument?.instrumentName}</h4>
+                      <p className="text-xs text-red-600 font-semibold">Expires in {daysLeft} days • {cert.expiryDate}</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    className="px-4 py-2 rounded-full bg-[#A82B2B] text-white font-bold text-xs hover:bg-[#8A2323] transition-colors shrink-0"
+                  >
+                    Start re-verification
+                  </button>
                 </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Diesel Dispensing Pump #2</h4>
-                  <p className="text-xs text-red-600 font-semibold">Expires in 19 days · 2026-09-14</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full bg-[#A82B2B] text-white font-bold text-xs hover:bg-[#8A2323] transition-colors shrink-0"
-              >
-                Start re-verification
-              </button>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center shrink-0">
-                  <AlertTriangle className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Warehouse Platform Scale</h4>
-                  <p className="text-xs text-amber-800 font-semibold">Expires in 45 days · 2026-10-10</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full bg-[#965A0D] text-white font-bold text-xs hover:bg-[#78470A] transition-colors shrink-0"
-              >
-                Start re-verification
-              </button>
-            </div>
+              );
+            })}
           </div>
         )}
       </div>
@@ -231,7 +239,7 @@ export const BusinessDashboard = () => {
           </button>
         </div>
 
-        {!showSampleData ? (
+        {myApplications.length === 0 ? (
           /* EMPTY STATE CARD */
           <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
             <div className="w-12 h-12 rounded-full bg-[#E0F5F6] text-[#00959C] flex items-center justify-center mx-auto mb-1">
@@ -243,40 +251,24 @@ export const BusinessDashboard = () => {
             </p>
           </div>
         ) : (
-          /* SAMPLE POPULATED ITEMS */
+          /* POPULATED ITEMS */
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5" />
+            {myApplications.map((app) => (
+              <div key={app.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                    <FileText className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{app.instrumentName}</h4>
+                    <p className="text-xs text-[#003943]/60 capitalize">{app.status}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Retail Counter Scale #2</h4>
-                  <p className="text-xs text-[#003943]/60">Just submitted</p>
-                </div>
+                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold shrink-0 capitalize">
+                  {app.status}
+                </span>
               </div>
-              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold shrink-0">
-                Submitted
-              </span>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Tank Measure — Depot 5</h4>
-                  <p className="text-xs text-[#003943]/60">Form incomplete</p>
-                </div>
-              </div>
-              <button
-                type="button"
-                className="px-4 py-2 rounded-full bg-[#003943] text-white font-bold text-xs hover:bg-[#002B33] transition-colors shrink-0"
-              >
-                Continue — Pending
-              </button>
-            </div>
+            ))}
           </div>
         )}
       </div>
@@ -295,7 +287,7 @@ export const BusinessDashboard = () => {
           </button>
         </div>
 
-        {!showSampleData ? (
+        {inProgressCount === 0 ? (
           /* EMPTY STATE CARD */
           <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
             <div className="w-12 h-12 rounded-full bg-[#E0F5F6] text-[#00959C] flex items-center justify-center mx-auto mb-1">
@@ -307,67 +299,24 @@ export const BusinessDashboard = () => {
             </p>
           </div>
         ) : (
-          /* SAMPLE POPULATED ITEMS */
+          /* POPULATED ITEMS */
           <div className="space-y-3">
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
-                  <FileText className="w-5 h-5" />
+            {myInProgressApplications.map((app) => (
+              <div key={app.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3.5">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0">
+                    <UserCheck className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{app.instrumentName}</h4>
+                    <p className="text-xs text-[#003943]/60">{app.assignedOfficerName ? `Assigned to ${app.assignedOfficerName}` : 'Under Review'}</p>
+                  </div>
                 </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Platform Scale — Warehouse 3</h4>
-                  <p className="text-xs text-[#003943]/60">With LMD Maharashtra</p>
-                </div>
+                <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-bold shrink-0 capitalize">
+                  {app.status}
+                </span>
               </div>
-              <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold shrink-0">
-                Under review
-              </span>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0">
-                  <UserCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Heavy Electronic Weighbridge</h4>
-                  <p className="text-xs text-[#003943]/60">Assigned to R. Sharma</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-bold shrink-0">
-                Assigned
-              </span>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
-                  <Clock className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Tank Measure — Depot 4</h4>
-                  <p className="text-xs text-[#003943]/60">Visit scheduled for Friday</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-bold shrink-0">
-                Scheduled
-              </span>
-            </div>
-
-            <div className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-              <div className="flex items-center gap-3.5">
-                <div className="w-10 h-10 rounded-xl bg-teal-50 text-teal-700 flex items-center justify-center shrink-0">
-                  <ShieldCheck className="w-5 h-5" />
-                </div>
-                <div>
-                  <h4 className="font-bold text-[#003943] text-sm sm:text-base">Flowmeter — Petrol Pump 9</h4>
-                  <p className="text-xs text-[#003943]/60">Officer on site today</p>
-                </div>
-              </div>
-              <span className="px-3 py-1 rounded-full bg-teal-100 text-teal-800 text-xs font-bold shrink-0">
-                Verification
-              </span>
-            </div>
+            ))}
           </div>
         )}
       </div>

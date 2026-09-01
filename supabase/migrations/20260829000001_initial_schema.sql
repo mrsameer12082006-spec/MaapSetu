@@ -1,7 +1,6 @@
 -- 001_initial_schema.sql
 
--- Enable UUID generation
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
 
 -- 1. PROFILES (Linked to Supabase Auth)
 CREATE TABLE profiles (
@@ -19,7 +18,7 @@ CREATE TABLE profiles (
 
 -- 2. INSTRUMENTS
 CREATE TABLE instruments (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     owner_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     instrument_name TEXT NOT NULL,
     category TEXT NOT NULL CHECK(category IN ('weighbridge', 'retail_scale', 'fuel_dispenser', 'flowmeter', 'package_scale', 'lab_balance')),
@@ -47,7 +46,7 @@ CREATE TABLE instruments (
 
 -- 3. OFFICERS
 CREATE TABLE officers (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id) ON DELETE CASCADE,
     officer_type TEXT NOT NULL CHECK(officer_type IN ('LMO', 'GATC')),
     employee_code TEXT UNIQUE,
@@ -65,7 +64,7 @@ CREATE TABLE officers (
 
 -- 4. APPLICATIONS
 CREATE TABLE applications (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     application_number TEXT UNIQUE NOT NULL,
     applicant_id UUID NOT NULL REFERENCES profiles(id),
     instrument_id UUID NOT NULL REFERENCES instruments(id),
@@ -87,7 +86,7 @@ CREATE TABLE applications (
 
 -- 5. VERIFICATION RESULTS
 CREATE TABLE verification_results (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     application_id UUID UNIQUE NOT NULL REFERENCES applications(id),
     officer_id UUID NOT NULL REFERENCES officers(id),
     outcome TEXT NOT NULL CHECK(outcome IN ('PASS', 'FAIL')),
@@ -108,7 +107,7 @@ CREATE TABLE verification_results (
 
 -- 6. CERTIFICATES
 CREATE TABLE certificates (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     application_id UUID UNIQUE NOT NULL REFERENCES applications(id),
     instrument_id UUID NOT NULL REFERENCES instruments(id),
     certificate_number TEXT UNIQUE NOT NULL,
@@ -126,7 +125,7 @@ CREATE TABLE certificates (
     expiry_date DATE NOT NULL,
     status TEXT DEFAULT 'VERIFIED' CHECK(status IN ('VERIFIED', 'EXPIRED', 'REVOKED')),
     seal_number TEXT,
-    qr_code_token UUID UNIQUE DEFAULT uuid_generate_v4(),
+    qr_code_token UUID UNIQUE DEFAULT gen_random_uuid(),
     remarks TEXT,
     issued_at TIMESTAMPTZ DEFAULT NOW(),
     created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -135,7 +134,7 @@ CREATE TABLE certificates (
 
 -- 7. APP TIMELINE
 CREATE TABLE app_timeline (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     application_id UUID NOT NULL REFERENCES applications(id) ON DELETE CASCADE,
     event_type TEXT NOT NULL,
     step TEXT NOT NULL,
@@ -149,7 +148,7 @@ CREATE TABLE app_timeline (
 
 -- 8. ACTIVITY LOGS
 CREATE TABLE activity_logs (
-    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     user_id UUID NOT NULL REFERENCES profiles(id),
     action TEXT NOT NULL,
     entity_type TEXT NOT NULL,
