@@ -122,37 +122,115 @@ export const VerificationFormPage = () => {
         </p>
       </div>
 
-      {/* Read-Only Instrument Specifications Reference Card */}
-      <Card title="Read-Only Reference Instrument Specifications" className="bg-neutral-100/60 border-neutral-300">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
-          <div>
-            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Instrument Type</span>
-            <span className="font-bold text-neutral-900 text-sm">{currentApp.instrumentName}</span>
+      {/* Comprehensive Read-Only Case Reference */}
+      <Card title="Read-Only Case Reference" className="bg-neutral-100/60 border-neutral-300">
+        <div className="space-y-6 text-xs">
+          {/* Applicant & Application Summary */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pb-4 border-b border-neutral-300">
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">Applicant / Business</span>
+              <span className="font-bold text-neutral-900 text-sm block">{currentApp.applicantName}</span>
+              {currentApp.applicant && (
+                <span className="text-[11px] text-neutral-700 block mt-1">{currentApp.applicant.email} | {currentApp.applicant.phone}</span>
+              )}
+            </div>
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">Application Type</span>
+              <span className="font-semibold text-neutral-900 block">{currentApp.applicationType}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">Preferred Date</span>
+              <span className="font-semibold text-neutral-900 block">{currentApp.preferredDate || 'Not specified'}</span>
+            </div>
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">Scheduled Date</span>
+              <span className="font-bold text-primary block">{currentApp.scheduledInspectionDate || 'Not scheduled yet'}</span>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Applicant / Owner</span>
-            <span className="font-semibold text-neutral-900">{currentApp.applicantName}</span>
+
+          {/* Instrument & Premises Specifications */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-4 border-b border-neutral-300">
+            <div className="space-y-3">
+              <h4 className="font-semibold text-neutral-800 uppercase tracking-wide text-[11px] border-b border-neutral-200 pb-1">Instrument Specifications</h4>
+              <div className="grid grid-cols-2 gap-y-2 gap-x-4">
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Instrument Type</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.name || currentApp.instrumentName}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Manufacturer</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.manufacturer || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Model & Serial</span>
+                  <span className="font-mono text-neutral-900">{currentApp.instrument?.model || 'N/A'} / {currentApp.instrument?.serialNumber || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Capacity (Min-Max)</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.minCapacity || '0'} - {currentApp.instrument?.maxCapacity || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Accuracy Class</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.accuracyClass || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Scale Interval</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.scaleInterval || 'N/A'}</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="font-semibold text-neutral-800 uppercase tracking-wide text-[11px] border-b border-neutral-200 pb-1">Premises & Site Information</h4>
+              <div className="grid grid-cols-1 gap-y-2">
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Premises Name</span>
+                  <span className="font-medium text-neutral-900">{currentApp.instrument?.premisesName || 'N/A'}</span>
+                </div>
+                <div>
+                  <span className="text-[10px] text-neutral-500 block">Installation Address</span>
+                  <span className="font-medium text-neutral-900 leading-relaxed">{currentApp.inspectionLocation}</span>
+                </div>
+                <div className="grid grid-cols-2 gap-2 mt-1">
+                  <div>
+                    <span className="text-[10px] text-neutral-500 block">State</span>
+                    <span className="font-medium text-neutral-900">{currentApp.instrument?.state || 'N/A'}</span>
+                  </div>
+                  <div>
+                    <span className="text-[10px] text-neutral-500 block">District</span>
+                    <span className="font-medium text-neutral-900">{currentApp.instrument?.district || 'N/A'}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
-          <div>
-            <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Inspection Site Address</span>
-            <span className="font-medium text-neutral-900">{currentApp.inspectionLocation}</span>
+
+          {/* Notes & Documents */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">LMD / Applicant Notes</span>
+              <div className="p-3 bg-white rounded border border-neutral-200 text-neutral-800 italic min-h-[60px]">
+                {currentApp.notes || 'No special notes or instructions provided.'}
+              </div>
+            </div>
+            <div>
+              <span className="text-[10px] text-neutral-600 uppercase font-semibold block mb-1">Supporting Documents ({currentApp.documents?.length || 0})</span>
+              {currentApp.documents && currentApp.documents.length > 0 ? (
+                <div className="space-y-2">
+                  {currentApp.documents.map((doc, idx) => (
+                    <div key={idx} className="flex items-center justify-between p-2 bg-white rounded border border-neutral-200">
+                      <span className="font-semibold text-neutral-800 truncate pr-2">{doc.name}</span>
+                      <a href={doc.url} onClick={(e) => { e.preventDefault(); alert('Document viewer will be integrated with Supabase Storage.'); }} className="text-primary hover:underline shrink-0 font-bold">View</a>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="p-3 bg-white rounded border border-neutral-200 text-neutral-500">
+                  No documents attached.
+                </div>
+              )}
+            </div>
           </div>
-          {targetInst && (
-            <>
-              <div>
-                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Serial Number</span>
-                <span className="font-mono font-bold text-neutral-900">{targetInst.serialNumber}</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Capacity / Class</span>
-                <span className="font-medium text-neutral-900">{targetInst.capacity} ({targetInst.accuracyClass})</span>
-              </div>
-              <div>
-                <span className="text-[10px] text-neutral-600 uppercase font-semibold block">Manufacturer</span>
-                <span className="font-medium text-neutral-900">{targetInst.manufacturer}</span>
-              </div>
-            </>
-          )}
         </div>
       </Card>
 

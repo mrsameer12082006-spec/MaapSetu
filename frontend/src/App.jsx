@@ -64,7 +64,7 @@ export function App() {
               <Route path="business" element={<ProtectedRoute allowedRole="business"><BusinessDashboard /></ProtectedRoute>} />
               <Route path="business/dashboard" element={<ProtectedRoute allowedRole="business"><BusinessDashboard /></ProtectedRoute>} />
               <Route path="business/register" element={<ProtectedRoute allowedRole="business"><RegisterInstrumentPage /></ProtectedRoute>} />
-              <Route path="business/apply" element={<ProtectedRoute allowedRole="business"><SubmitApplicationPage /></ProtectedRoute>} />
+              <Route path="business/apply" element={<Navigate to="/business/register" replace />} />
               <Route path="business/applications" element={<ProtectedRoute allowedRole="business"><MyApplicationsPage /></ProtectedRoute>} />
               <Route path="business/certificates" element={<ProtectedRoute allowedRole="business"><MyCertificatesPage /></ProtectedRoute>} />
 

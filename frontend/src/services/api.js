@@ -105,9 +105,10 @@ export const mockApiService = {
 
     return data.map(app => ({
       id: app.id,
+      applicationNumber: app.application_number,
       instrumentId: app.instrument_id,
       instrumentName: app.instruments ? app.instruments.instrument_name : 'Unknown Instrument',
-      applicantName: app.profiles ? app.profiles.name : 'Unknown Applicant',
+      applicantName: app.profiles ? app.profiles.name : (app.instruments ? app.instruments.premises_name : 'Unknown Applicant'),
       applicantId: app.applicant_id,
       applicationType: app.application_type,
       submissionDate: app.submitted_at,
@@ -120,7 +121,36 @@ export const mockApiService = {
       inspectionLocation: app.inspection_location,
       documents: app.documents,
       notes: app.notes,
-      timeline: [] // Will need app_timeline fetch if required, keeping empty array for now to prevent crashes
+      timeline: [], // Will need app_timeline fetch if required, keeping empty array for now to prevent crashes
+      
+      // Full Nested Objects for Case Reference
+      instrument: app.instruments ? {
+        id: app.instruments.id,
+        name: app.instruments.instrument_name,
+        category: app.instruments.category,
+        manufacturer: app.instruments.manufacturer,
+        model: app.instruments.model_number,
+        serialNumber: app.instruments.serial_number,
+        modelApprovalNo: app.instruments.model_approval_no,
+        maxCapacity: app.instruments.max_capacity,
+        minCapacity: app.instruments.min_capacity,
+        unitOfMeasurement: app.instruments.unit_of_measurement,
+        scaleInterval: app.instruments.scale_interval,
+        accuracyClass: app.instruments.accuracy_class,
+        quantity: app.instruments.quantity,
+        premisesName: app.instruments.premises_name,
+        installationLocation: app.instruments.installation_location,
+        state: app.instruments.state,
+        district: app.instruments.district
+      } : null,
+      
+      applicant: app.profiles ? {
+        id: app.profiles.id,
+        name: app.profiles.name,
+        email: app.profiles.email,
+        phone: app.profiles.phone,
+        address: app.profiles.address
+      } : null
     }));
   },
 

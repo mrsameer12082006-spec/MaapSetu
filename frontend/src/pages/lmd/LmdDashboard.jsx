@@ -222,13 +222,35 @@ export const LmdDashboard = () => {
           </p>
         </div>
 
-        <div className="bg-[#FDF9F6] rounded-2xl p-8 border border-[#003943]/15 text-center space-y-2">
-          <Users className="w-8 h-8 text-[#00959C] mx-auto" />
-          <p className="font-serif font-bold text-[#003943] text-base">No authorized verifiers added yet</p>
-          <p className="text-xs text-[#003943]/60 max-w-md mx-auto">
-            State Legal Metrology Officers (LMO) and Government Approved Test Centres (GATC) will appear here once onboarded into the registry.
-          </p>
-        </div>
+        {officers && officers.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {officers.map(officer => (
+              <div key={officer.id} className="p-4 bg-[#FDF9F6] rounded-2xl border border-[#003943]/10 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-[#00959C] text-white flex items-center justify-center font-bold">
+                    {officer.name.charAt(0)}
+                  </div>
+                  <div>
+                    <p className="font-bold text-[#003943] text-sm">{officer.name}</p>
+                    <p className="text-xs text-[#00959C] font-semibold uppercase">{officer.role}</p>
+                  </div>
+                </div>
+                <div className="text-xs text-[#003943]/70 pt-2 border-t border-[#003943]/5">
+                  <p>Zone: <span className="font-semibold">{officer.zone || 'Unassigned'}</span></p>
+                  <p>Rating: <span className="font-semibold">{officer.rating || 'N/A'}</span></p>
+                </div>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-[#FDF9F6] rounded-2xl p-8 border border-[#003943]/15 text-center space-y-2">
+            <Users className="w-8 h-8 text-[#00959C] mx-auto" />
+            <p className="font-serif font-bold text-[#003943] text-base">No authorized verifiers added yet</p>
+            <p className="text-xs text-[#003943]/60 max-w-md mx-auto">
+              State Legal Metrology Officers (LMO) and Government Approved Test Centres (GATC) will appear here once onboarded into the registry.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* 5. REVIEW & ASSIGN VERIFIER MODAL */}

@@ -231,39 +231,39 @@ export const ReviewApplicationsPage = () => {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-white p-3 rounded-xl border border-[#003943]/10">
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Manufacturer</span>
-                    <span className="font-semibold text-[#003943]">Avery India Ltd</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.manufacturer || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Model Designation</span>
-                    <span className="font-semibold text-[#003943]">WB-60T-PRO</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.model || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Serial Number</span>
-                    <span className="font-mono font-bold text-[#00959C]">AV-984210-IN</span>
+                    <span className="font-mono font-bold text-[#00959C]">{selectedApp.instrument?.serialNumber || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Max Capacity</span>
-                    <span className="font-semibold text-[#003943]">60,000 kg (60T)</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.maxCapacity || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Min Capacity</span>
-                    <span className="font-semibold text-[#003943]">200 kg</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.minCapacity || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Accuracy Class</span>
-                    <span className="font-semibold text-[#003943]">Class III (Medium)</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.accuracyClass || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Scale Interval (e)</span>
-                    <span className="font-semibold text-[#003943]">10 kg</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.scaleInterval || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Unit of Measure</span>
-                    <span className="font-semibold text-[#003943]">Kilogram (kg)</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.unitOfMeasurement || 'N/A'}</span>
                   </div>
                   <div>
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase">Quantity</span>
-                    <span className="font-semibold text-[#003943]">1 Unit</span>
+                    <span className="font-semibold text-[#003943]">{selectedApp.instrument?.quantity || '1 Unit'}</span>
                   </div>
                 </div>
               </div>

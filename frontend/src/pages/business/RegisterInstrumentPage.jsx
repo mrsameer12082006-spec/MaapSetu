@@ -5,6 +5,9 @@ import {
   FileText,
   Sparkles,
   CheckCircle2,
+  CheckCircle,
+  Upload,
+  Trash2,
   ArrowLeft,
   UploadCloud,
   ArrowRight,
@@ -21,7 +24,7 @@ export const RegisterInstrumentPage = () => {
   const [searchParams] = useSearchParams();
   const initialMode = searchParams.get('mode'); // 'ocr' | 'manual' | null
 
-  const { registerInstrument, runOCR } = useData();
+  const { registerInstrument, submitApplication, runOCR } = useData();
 
   // Mode Selection: null (Choice Screen), 'ocr' (Upload Photo), 'manual' (Fill Form)
   const [selectedMode, setSelectedMode] = useState(initialMode || null);
@@ -30,6 +33,12 @@ export const RegisterInstrumentPage = () => {
   const [ocrResult, setOcrResult] = useState(null);
   const [submitLoading, setSubmitLoading] = useState(false);
   const [previewImage, setPreviewImage] = useState(null);
+
+  // Verification Application State
+  const [appType, setAppType] = useState('Initial Verification (New Instrument)');
+  const [preferredDate, setPreferredDate] = useState('');
+  const [notes, setNotes] = useState('');
+  const [files, setFiles] = useState([]);
 
   // 17 Complete Form Fields as requested
   const [formData, setFormData] = useState({
@@ -93,16 +102,46 @@ export const RegisterInstrumentPage = () => {
     setOcrLoading(false);
   };
 
+  const handleAddFile = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setFiles([...files, { name: file.name, size: `${(file.size / (1024 * 1024)).toFixed(1)} MB` }]);
+    }
+  };
+
+  const handleRemoveFile = (index) => {
+    setFiles(files.filter((_, idx) => idx !== index));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitLoading(true);
-    await registerInstrument({
-      ...formData,
-      capacity: `${formData.maxCapacity} ${formData.unitOfMeasurement}`,
-      location: `${formData.premisesName}, ${formData.installationAddress}, ${formData.district}, ${formData.state}`
-    });
-    setSubmitLoading(false);
-    navigate('/business');
+    try {
+      // 1. Create the instrument
+      const newInst = await registerInstrument({
+        ...formData,
+        capacity: `${formData.maxCapacity} ${formData.unitOfMeasurement}`,
+        location: `${formData.premisesName}, ${formData.installationAddress}, ${formData.district}, ${formData.state}`
+      });
+
+      // 2. Create the application automatically mapped to the new instrument
+      await submitApplication({
+        instrumentId: newInst.id,
+        applicationType: appType,
+        preferredDate,
+        inspectionLocation: `${formData.premisesName}, ${formData.installationAddress}, ${formData.district}, ${formData.state}`,
+        documents: files.map((f) => ({ name: f.name, size: f.size, url: '#' })),
+        notes
+      });
+
+      // Workflow successfully completed, return to applications
+      navigate('/business/applications');
+    } catch (error) {
+      console.error("Combined workflow failed:", error);
+      alert("Failed to create application. Instrument may have been created successfully. " + error.message);
+    } finally {
+      setSubmitLoading(false);
+    }
   };
 
   const indianStates = [
@@ -644,10 +683,113 @@ export const RegisterInstrumentPage = () => {
                 )}
               </div>
 
+              {/* 4. Verification Application Details */}
+              <div className="pt-2">
+                <div className="flex items-center gap-3 border-b border-[#003943]/10 pb-3 mb-6">
+                  <div className="w-8 h-8 rounded-full bg-[#E0F5F6] flex items-center justify-center text-[#00959C]">
+                    <span className="font-extrabold text-sm">4</span>
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-serif font-bold text-[#003943]">Verification Application Details</h2>
+                    <p className="text-xs text-[#003943]/70 font-medium">Schedule the verification for this instrument</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
+                      Application Type <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={appType}
+                      onChange={(e) => setAppType(e.target.value)}
+                      required
+                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-bold text-[#003943] focus:outline-none focus:border-[#00959C]"
+                    >
+                      <option value="Initial Verification (New Instrument)">Initial Verification (New Instrument)</option>
+                      <option value="Periodic Re-verification (Annual)">Periodic Re-verification (Annual)</option>
+                      <option value="Re-verification After Stamping/Repair">Re-verification After Stamping/Repair</option>
+                      <option value="Emergency Field Calibration">Emergency Field Calibration</option>
+                    </select>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
+                      Preferred Inspection Date <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={preferredDate}
+                      onChange={(e) => setPreferredDate(e.target.value)}
+                      required
+                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-bold text-[#003943] focus:outline-none focus:border-[#00959C]"
+                    />
+                  </div>
+
+                  <div className="col-span-1 sm:col-span-2 space-y-1.5">
+                    <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
+                      Inspection Notes / Special Instructions
+                    </label>
+                    <textarea
+                      rows={3}
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Provide site access instructions, contact person phone number, or required test weight equipment details..."
+                      className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-bold text-[#003943] focus:outline-none focus:border-[#00959C]"
+                    />
+                  </div>
+                </div>
+
+                {/* Supporting Documents section */}
+                <div className="mt-6 space-y-4">
+                  <div className="flex items-center gap-2">
+                    <FileText className="w-5 h-5 text-[#00959C]" />
+                    <h3 className="text-sm font-bold text-[#003943]">Supporting Documents</h3>
+                  </div>
+                  
+                  <div className="border-2 border-dashed border-[#003943]/20 hover:border-[#00959C] rounded-2xl p-6 bg-[#FDF9F6]/50 text-center relative transition-colors cursor-pointer">
+                    <Upload className="w-8 h-8 text-[#00959C] mx-auto mb-2" />
+                    <p className="text-sm font-bold text-[#003943]">Drag & Drop files or click to upload</p>
+                    <p className="text-xs text-[#003943]/70 mt-1">Accepted: PDF, JPG, PNG (Max 10MB per file)</p>
+                    <input
+                      type="file"
+                      onChange={handleAddFile}
+                      className="absolute inset-0 opacity-0 cursor-pointer"
+                    />
+                  </div>
+
+                  {files.length > 0 && (
+                    <div className="space-y-2 pt-2">
+                      <p className="text-xs font-bold uppercase tracking-wider text-[#003943]/70">Attached Documents ({files.length})</p>
+                      {files.map((file, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-white rounded-xl border border-[#003943]/15 shadow-sm text-xs group">
+                          <div className="flex items-center gap-2.5">
+                            <div className="p-1.5 bg-[#E0F5F6] rounded-lg">
+                              <FileText className="w-4 h-4 text-[#00959C]" />
+                            </div>
+                            <div>
+                              <p className="font-bold text-[#003943]">{file.name}</p>
+                              <p className="text-[10px] text-[#003943]/60">{file.size}</p>
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveFile(idx)}
+                            className="text-[#003943]/40 hover:text-red-500 p-1.5 rounded-lg hover:bg-red-50 transition-colors"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="p-4 bg-[#E0F5F6] rounded-2xl border border-[#00959C]/30 text-xs text-[#003943] flex items-center gap-3">
                 <Info className="w-5 h-5 text-[#00959C] shrink-0" />
                 <span className="font-bold text-[#003943]">
-                  Once saved, this instrument will be registered in your account registry and available for Legal Metrology Officers (LMO) verification.
+                  Submitting this form will register your instrument and officially file the verification application with the Legal Metrology department.
                 </span>
               </div>
 
@@ -664,8 +806,8 @@ export const RegisterInstrumentPage = () => {
                   disabled={submitLoading}
                   className="px-7 py-3.5 rounded-full bg-[#003943] hover:bg-[#002B33] text-white font-extrabold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 group"
                 >
-                  <span>{submitLoading ? 'Saving Specifications...' : 'Save & Register Instrument'}</span>
-                  <ArrowRight className="w-4 h-4 text-[#02B7BF] group-hover:translate-x-1 transition-transform" />
+                  <span>{submitLoading ? 'Submitting Application...' : 'Submit Complete Registration'}</span>
+                  <CheckCircle className="w-4 h-4 text-[#02B7BF] group-hover:scale-110 transition-transform" />
                 </button>
               </div>
             </div>
