@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
 import { Scale, Building2, UserCheck, ShieldCheck, ArrowRight, Lock, Sparkles, ArrowUpRight, ChevronDown, CheckCircle2, UserPlus, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
+import { supabase } from '../../services/supabase';
 
 export const LoginPage = () => {
   const navigate = useNavigate();
@@ -11,31 +12,48 @@ export const LoginPage = () => {
   const { loginAsRole, registerUser, user, currentRole } = useAuth();
   const [selectedRole, setSelectedRole] = useState(defaultRole);
 
-  React.useEffect(() => {
+  // ── Redirect if already authenticated with explicit redirect param ─────────
+  // Only fires on page mount / session restore — NOT after fresh login
+  // (fresh login navigation is handled synchronously inside handleSubmit).
+  useEffect(() => {
     const redirectPath = searchParams.get('redirect');
-    // ONLY auto-redirect if an explicit protected redirect path was requested AND matches active user role
-    if (redirectPath && user) {
-      if (currentRole === USER_ROLES.BUSINESS && redirectPath.startsWith('/business')) {
-        navigate(redirectPath, { replace: true });
-      } else if (currentRole === USER_ROLES.LMD_ADMIN && redirectPath.startsWith('/lmd')) {
-        navigate(redirectPath, { replace: true });
-      } else if (currentRole === USER_ROLES.OFFICER && redirectPath.startsWith('/officer')) {
-        navigate(redirectPath, { replace: true });
-      }
+    if (redirectPath && user && currentRole) {
+      const homes = { business: '/business', lmd: '/lmd', officer: '/officer' };
+      const home = homes[currentRole] || '/';
+      const dest = redirectPath.startsWith(`/${currentRole}`) ? redirectPath : home;
+      navigate(dest, { replace: true });
     }
   }, [user, currentRole, searchParams, navigate]);
-  const [username, setUsername] = useState('business.demo@maapsetu.demo');
-  const [password, setPassword] = useState('MaapSetu@2026');
+
+  // ── Helper: build a role-safe landing path ─────────────────────────────────
+  const safeDest = (dbRole) => {
+    const homes = { business: '/business', lmd: '/lmd', officer: '/officer' };
+    const home = homes[dbRole] || '/';
+    const redirectPath = searchParams.get('redirect');
+    if (redirectPath && redirectPath.startsWith(`/${dbRole}`)) return redirectPath;
+    return home;
+  };
+  const [username, setUsername] = useState(
+    defaultRole === USER_ROLES.LMD_ADMIN
+      ? 'lmd01@maapsetu.demo'
+      : defaultRole === USER_ROLES.OFFICER
+      ? 'lmo01@maapsetu.demo'
+      : ''
+  );
+  const [password, setPassword] = useState(
+    defaultRole === USER_ROLES.BUSINESS ? '' : 'MaapSetu@2026'
+  );
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Sign Up Mode State (Available for Business Role)
+  // NOTE: defaults are intentionally BLANK so new users provide their own details
   const [isSignUp, setIsSignUp] = useState(false);
-  const [fullName, setFullName] = useState('Vikramaditya Mehta');
-  const [signUpEmail, setSignUpEmail] = useState('business.demo@maapsetu.demo');
-  const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
-  const [signUpPassword, setSignUpPassword] = useState('password123');
-  const [confirmPassword, setConfirmPassword] = useState('password123');
+  const [fullName, setFullName] = useState('');
+  const [signUpEmail, setSignUpEmail] = useState('');
+  const [mobileNumber, setMobileNumber] = useState('');
+  const [signUpPassword, setSignUpPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   // Password Visibility States
   const [showLoginPassword, setShowLoginPassword] = useState(false);
@@ -46,6 +64,7 @@ export const LoginPage = () => {
   const [signUpSuccess, setSignUpSuccess] = useState(false);
   const [loginSuccess, setLoginSuccess] = useState(false);
 
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -54,44 +73,44 @@ export const LoginPage = () => {
     setErrorMsg('');
 
     if (isSignUp) {
-      if (signUpPassword !== confirmPassword) {
-        setErrorMsg('Passwords do not match.');
-        setLoading(false);
-        return;
-      }
-      
+      // ── Client-side validation ──────────────────────────────────────────────
+      if (!fullName.trim()) { setErrorMsg('Full name is required.'); setLoading(false); return; }
+      if (!signUpEmail.trim()) { setErrorMsg('Email address is required.'); setLoading(false); return; }
+      if (signUpPassword.length < 6) { setErrorMsg('Password must be at least 6 characters.'); setLoading(false); return; }
+      if (signUpPassword !== confirmPassword) { setErrorMsg('Passwords do not match.'); setLoading(false); return; }
+
       try {
-        await registerUser(signUpEmail, signUpPassword, {
-          name: fullName,
-          phone: mobileNumber,
+        const regRes = await registerUser(signUpEmail.trim(), signUpPassword, {
+          name: fullName.trim(),
+          phone: mobileNumber.trim() || null,
           role: USER_ROLES.BUSINESS,
-          organization: 'Apex Logistics & Freight Corp', // Optional: could be a form field
+          organization: null,
         });
-        
+
         setSignUpSuccess(true);
-        const redirectPath = searchParams.get('redirect');
-        setTimeout(() => {
-          navigate(redirectPath || '/business');
-        }, 800);
+        setUsername(signUpEmail.trim());
+        setPassword(signUpPassword);
+
+        // If session was established immediately, navigate to portal
+        if (regRes?.session) {
+          navigate(safeDest('business'), { replace: true });
+        } else {
+          // If email confirmation is required, show success and switch to login tab with credentials ready
+          setIsSignUp(false);
+        }
       } catch (error) {
-        setErrorMsg(error.message || 'Registration failed.');
+        setErrorMsg(error.message || 'Registration failed. Please try again.');
       } finally {
         setLoading(false);
       }
+
     } else {
       try {
-        await loginAsRole(username, password);
+        const authRes = await loginAsRole(username, password);
+        const effectiveRole = authRes?.profile?.role || currentRole || selectedRole;
+
         setLoginSuccess(true);
-        const redirectPath = searchParams.get('redirect');
-        setTimeout(() => {
-          if (selectedRole === USER_ROLES.BUSINESS) {
-            navigate(redirectPath || '/business');
-          } else if (selectedRole === USER_ROLES.LMD_ADMIN) {
-            navigate('/lmd');
-          } else if (selectedRole === USER_ROLES.OFFICER) {
-            navigate('/officer');
-          }
-        }, 800);
+        navigate(safeDest(effectiveRole), { replace: true });
       } catch (error) {
         setErrorMsg('Invalid login credentials. ' + (error.message || ''));
       } finally {
@@ -106,9 +125,16 @@ export const LoginPage = () => {
     setLoginSuccess(false);
     setSignUpSuccess(false);
     setErrorMsg('');
-    if (roleKey === USER_ROLES.BUSINESS) setUsername('business.demo@maapsetu.demo');
-    else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('lmd01@maapsetu.demo');
-    else if (roleKey === USER_ROLES.OFFICER) setUsername('lmo01@maapsetu.demo');
+    if (roleKey === USER_ROLES.BUSINESS) {
+      setUsername('');
+      setPassword('');
+    } else if (roleKey === USER_ROLES.LMD_ADMIN) {
+      setUsername('lmd01@maapsetu.demo');
+      setPassword('MaapSetu@2026');
+    } else if (roleKey === USER_ROLES.OFFICER) {
+      setUsername('lmo01@maapsetu.demo');
+      setPassword('MaapSetu@2026');
+    }
   };
 
   return (
@@ -199,7 +225,12 @@ export const LoginPage = () => {
         {signUpSuccess && (
           <div className="p-4 bg-emerald-50 border border-emerald-300 rounded-2xl text-emerald-800 text-xs sm:text-sm font-bold flex items-center gap-3 animate-in fade-in">
             <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-            <span>Business Account Created Successfully! Switching to Sign In...</span>
+            <div>
+              <p>Business Account Registered Successfully!</p>
+              <p className="text-[11px] font-normal text-emerald-700 mt-0.5">
+                If a verification link was sent to your email, please confirm it, then sign in below.
+              </p>
+            </div>
           </div>
         )}
 
@@ -345,14 +376,28 @@ export const LoginPage = () => {
           /* REGULAR PORTAL LOGIN FORM */
           <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-1.5">
-              <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
-                {selectedRole === USER_ROLES.BUSINESS
-                  ? 'Email / Mobile Number'
-                  : selectedRole === USER_ROLES.LMD_ADMIN
-                  ? 'Government Email / Employee ID'
-                  : 'Official Email / Officer ID'}{' '}
-                <span className="text-red-500">*</span>
-              </label>
+              <div className="flex items-center justify-between">
+                <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
+                  {selectedRole === USER_ROLES.BUSINESS
+                    ? 'Email / Mobile Number'
+                    : selectedRole === USER_ROLES.LMD_ADMIN
+                    ? 'Government Email / Employee ID'
+                    : 'Official Email / Officer ID'}{' '}
+                  <span className="text-red-500">*</span>
+                </label>
+                {selectedRole === USER_ROLES.BUSINESS && (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setUsername('business.demo@maapsetu.demo');
+                      setPassword('MaapSetu@2026');
+                    }}
+                    className="text-[11px] font-bold text-[#00959C] hover:underline"
+                  >
+                    Use Demo Account
+                  </button>
+                )}
+              </div>
               <input
                 type="text"
                 value={username}

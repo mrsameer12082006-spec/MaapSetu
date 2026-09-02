@@ -32,12 +32,21 @@ import { CaseRecordPage } from './pages/officer/CaseRecordPage';
 
 // Route Guard Component
 const ProtectedRoute = ({ children, allowedRole }) => {
-  const { currentRole, loading } = useAuth();
+  const { currentRole, loading, session } = useAuth();
   const location = useLocation();
   
-  if (loading) return <div className="p-8 text-center">Loading authentication...</div>;
+  if (loading || (session && !currentRole)) {
+    return (
+      <div className="min-h-[60vh] flex items-center justify-center bg-[#FDF9F6]">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-[#00959C] border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-sm font-semibold text-[#003943]">Loading your portal...</p>
+        </div>
+      </div>
+    );
+  }
   
-  if (!currentRole) {
+  if (!session || !currentRole) {
     const redirectParam = location.pathname ? `?redirect=${encodeURIComponent(location.pathname + location.search)}` : '';
     return <Navigate to={`/login${redirectParam}`} replace />;
   }
