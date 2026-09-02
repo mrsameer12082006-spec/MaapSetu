@@ -451,7 +451,7 @@ Central Registry Reference: ${doc.id}
           {/* Right Action Button */}
           <div className="flex items-center gap-4">
             <Link
-              to="/login?role=business"
+              to="/login"
               className="dashed-border-btn inline-flex items-center gap-3 px-8 py-3.5 rounded-full bg-[#E0F5F6] text-[#003943] font-extrabold text-base sm:text-lg hover:bg-[#00959C] hover:text-white transition-all shadow-sm"
             >
               <span>Portal Login</span>

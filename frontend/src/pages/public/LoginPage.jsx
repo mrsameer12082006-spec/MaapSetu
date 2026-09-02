@@ -13,8 +13,15 @@ export const LoginPage = () => {
 
   React.useEffect(() => {
     const redirectPath = searchParams.get('redirect');
-    if (user && currentRole === USER_ROLES.BUSINESS) {
-      navigate(redirectPath || '/business/applications', { replace: true });
+    // ONLY auto-redirect if an explicit protected redirect path was requested AND matches active user role
+    if (redirectPath && user) {
+      if (currentRole === USER_ROLES.BUSINESS && redirectPath.startsWith('/business')) {
+        navigate(redirectPath, { replace: true });
+      } else if (currentRole === USER_ROLES.LMD_ADMIN && redirectPath.startsWith('/lmd')) {
+        navigate(redirectPath, { replace: true });
+      } else if (currentRole === USER_ROLES.OFFICER && redirectPath.startsWith('/officer')) {
+        navigate(redirectPath, { replace: true });
+      }
     }
   }, [user, currentRole, searchParams, navigate]);
   const [username, setUsername] = useState('v.mehta@apexlogistics.in');

@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider } from './context/DataContext';
 import { AppLayout } from './components/layout/AppLayout';
@@ -33,10 +33,14 @@ import { CaseRecordPage } from './pages/officer/CaseRecordPage';
 // Route Guard Component
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { currentRole, loading } = useAuth();
+  const location = useLocation();
   
   if (loading) return <div className="p-8 text-center">Loading authentication...</div>;
   
-  if (!currentRole) return <Navigate to="/login" replace />;
+  if (!currentRole) {
+    const redirectParam = location.pathname ? `?redirect=${encodeURIComponent(location.pathname + location.search)}` : '';
+    return <Navigate to={`/login${redirectParam}`} replace />;
+  }
   
   if (allowedRole && currentRole !== allowedRole) {
     return <Navigate to={`/${currentRole}`} replace />;
