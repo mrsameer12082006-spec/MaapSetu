@@ -291,16 +291,20 @@ export const RegisterInstrumentPage = () => {
 
                 <div className="space-y-1.5">
                   <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
-                    Scale Interval (e)
+                    Verification Scale Interval (e) <span className="text-red-500">*</span>
                   </label>
                   <input
                     type="text"
                     name="scaleInterval"
                     value={formData.scaleInterval}
                     onChange={handleChange}
-                    placeholder="e.g. e = 10 g or e = 0.01 L"
+                    required
+                    placeholder="e.g. 1 g, 10 g, 0.5 g, 10 kg"
                     className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-[#003943] focus:outline-none focus:border-[#00959C]"
                   />
+                  <p className="text-[11px] text-[#003943]/60">
+                    Required under OIML R76 & Legal Metrology Rules, 2011 to calculate Maximum Permissible Error (MPE).
+                  </p>
                 </div>
 
                 {/* Row 6: Accuracy Class */}

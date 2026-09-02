@@ -120,13 +120,27 @@ export const AllApplicationsPage = () => {
               className="rounded-input border border-neutral-300 text-xs py-2 px-3 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All ({getStatusCount('all')})</option>
-                <option value="submitted">Submitted ({getStatusCount('submitted')})</option>
-                <option value="assigned">Assigned ({getStatusCount('assigned')})</option>
-                <option value="in_progress">In Progress ({getStatusCount('in_progress')})</option>
-                <option value="passed">Passed ({getStatusCount('passed')})</option>
-                <option value="failed">Failed ({getStatusCount('failed')})</option>
+              <option value="submitted">Submitted ({getStatusCount('submitted')})</option>
+              <option value="assigned">Assigned ({getStatusCount('assigned')})</option>
+              <option value="in_progress">In Progress ({getStatusCount('in_progress')})</option>
+              <option value="passed">Passed ({getStatusCount('passed')})</option>
+              <option value="failed">Failed ({getStatusCount('failed')})</option>
             </select>
           </div>
+        </div>
+        
+        <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-100">
+          <p className="text-xs text-neutral-600 font-medium">
+            Showing <span className="font-bold text-neutral-900">{filteredApps.length}</span> of <span className="font-bold text-neutral-900">{applications.length}</span> applications
+          </p>
+          {(searchTerm || statusFilter !== 'all') && (
+            <button
+              onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
+              className="text-xs font-semibold text-[#00959C] hover:underline"
+            >
+              Clear filters
+            </button>
+          )}
         </div>
       </Card>
 
@@ -164,6 +178,8 @@ export const AllApplicationsPage = () => {
     </div>
   );
 };
+
+
 
 
 

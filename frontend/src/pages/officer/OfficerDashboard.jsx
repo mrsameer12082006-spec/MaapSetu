@@ -58,6 +58,13 @@ export const OfficerDashboard = () => {
   const assignedQueue = applications.filter((a) => a.status === 'assigned' || a.status === 'in_progress');
   const completedQueue = applications.filter((a) => a.status === 'passed' || a.status === 'failed');
 
+  const pendingPreview = [...assignedQueue]
+    .sort((a, b) => new Date(a.scheduledInspectionDate || a.created_at) - new Date(b.scheduledInspectionDate || b.created_at))
+    .slice(0, 3);
+  const completedPreview = [...completedQueue]
+    .sort((a, b) => new Date(b.created_at || b.submissionDate) - new Date(a.created_at || a.submissionDate))
+    .slice(0, 3);
+
   const [technicalResults, setTechnicalResults] = useState({});
 
   const handleToggleChecklist = (key) => {
@@ -72,9 +79,10 @@ export const OfficerDashboard = () => {
     e.preventDefault();
     if (!activeApp) return;
 
-    if (outcome === 'FAIL' && failReason === 'Other') {
-      if (!customOtherReason || !customOtherReason.trim()) {
-        alert("Please provide the reason for failure.");
+    if (outcome === 'FAIL') {
+      const reasonToSubmit = failReason === 'Other' ? customOtherReason.trim() : failReason;
+      if (!reasonToSubmit || reasonToSubmit === 'Other') {
+        alert("Please provide the specific reason for failure when 'Other' is selected.");
         return;
       }
     }
@@ -82,17 +90,18 @@ export const OfficerDashboard = () => {
     setSubmitting(true);
 
     try {
+      const rejectionReasonVal = outcome === 'FAIL'
+        ? (failReason === 'Other' ? customOtherReason.trim() : failReason)
+        : null;
+
       await submitVerificationResult({
         applicationId: activeApp.id,
         outcome: outcome,
         checklist_results: checklist,
         technical_test_results: technicalResults,
         officer_remarks: remarks,
-        rejection_reason: outcome === 'FAIL' ? (failReason === 'Other' ? customOtherReason.trim() : failReason) : null,
-        photo_evidence_urls: [
-          'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
-          'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
-        ]
+        rejection_reason: rejectionReasonVal,
+        photo_evidence_urls: []
       });
 
       setSubmitting(false);
@@ -159,7 +168,7 @@ export const OfficerDashboard = () => {
           </div>
         ) : (
           <div className="space-y-4">
-            {assignedQueue.map((app) => (
+            {pendingPreview.map((app) => (
               <div
                 key={app.id}
                 className="p-5 rounded-2xl bg-[#FDF9F6] border border-[#003943]/15 hover:border-[#00959C] transition-all space-y-3"
@@ -189,14 +198,13 @@ export const OfficerDashboard = () => {
                     </p>
                   </div>
 
-                  <button
-                    type="button"
-                    onClick={() => setActiveApp(app)}
-                    className="px-6 py-3 rounded-full bg-[#003943] hover:bg-[#002B33] text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 shrink-0"
+                  <Link
+                    to={`/officer/record/${app.id}`}
+                    className="px-5 py-2.5 rounded-full bg-[#003943] hover:bg-[#002B33] text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center gap-2 shrink-0"
                   >
-                    <CheckSquare className="w-4 h-4 text-[#02B7BF]" />
-                    <span>Start Physical Verification</span>
-                  </button>
+                    <FileText className="w-4 h-4 text-[#02B7BF]" />
+                    <span>View Record</span>
+                  </Link>
                 </div>
               </div>
             ))}
@@ -214,16 +222,24 @@ export const OfficerDashboard = () => {
         </div>
 
         <div className="space-y-3">
-          {completedQueue.map((app) => (
+          {completedPreview.map((app) => (
             <div key={app.id} className="p-4 rounded-2xl bg-[#FDF9F6] border border-[#003943]/10 flex items-center justify-between text-xs">
               <div>
                 <p className="font-mono font-bold text-[#00959C]">{app.id}</p>
                 <p className="font-serif font-bold text-[#003943] text-sm">{app.instrumentName}</p>
                 <p className="text-[#003943]/70">Owner: {app.applicantName}</p>
               </div>
-              <span className={`px-3.5 py-1 rounded-full font-bold text-xs ${app.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
-                {app.status === 'failed' ? 'FAIL' : 'PASS'}
-              </span>
+              <div className="flex items-center gap-2">
+                <span className={`px-3.5 py-1 rounded-full font-bold text-xs ${app.status === 'failed' ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800'}`}>
+                  {app.status === 'failed' ? 'FAIL' : 'PASS'}
+                </span>
+                <Link
+                  to={`/officer/record/${app.id}`}
+                  className="px-3 py-1 rounded-full border border-[#003943]/20 font-bold text-xs text-[#003943] hover:bg-white hover:border-[#00959C] transition-all"
+                >
+                  View Record
+                </Link>
+              </div>
             </div>
           ))}
         </div>

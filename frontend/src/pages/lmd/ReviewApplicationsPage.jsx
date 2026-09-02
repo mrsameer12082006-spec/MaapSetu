@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { Search, FileCheck, UserCheck, Eye, Check, X, MapPin, FileText, AlertCircle, Award, CheckSquare, ShieldCheck } from 'lucide-react';
+import { Search, FileCheck, UserCheck, Eye, Check, X, MapPin, FileText, AlertCircle, Award, CheckSquare, ShieldCheck, Building2 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Card } from '../../components/common/Card';
 import { Table } from '../../components/common/Table';
@@ -18,11 +18,13 @@ export const ReviewApplicationsPage = () => {
   const [assignModalApp, setAssignModalApp] = useState(null);
   const [inspectModalApp, setInspectModalApp] = useState(null);
   const [selectedOfficerId, setSelectedOfficerId] = useState(officers[0]?.id || 'OFF-101');
+  const [verifierType, setVerifierType] = useState('LMO');
   const [scheduledDate, setScheduledDate] = useState('2026-08-30');
   const [assignLoading, setAssignLoading] = useState(false);
   const [inspectLoading, setInspectLoading] = useState(false);
   const [inspectionOutcome, setInspectionOutcome] = useState('PASS');
   const [failReason, setFailReason] = useState('MPE exceeded');
+  const [customOtherReason, setCustomOtherReason] = useState('');
   const [inspectionRemarks, setInspectionRemarks] = useState('Physical field verification completed. All MPE tolerance checks within Rule 11 bounds.');
 
   // Guarantee the selectedOfficerId snaps to a real UUID when data loads
@@ -402,7 +404,13 @@ export const ReviewApplicationsPage = () => {
                     <span className="text-[#003943]/60 text-[10px] font-bold block uppercase mb-1">
                       Technical Verification & Rule MPE Test Results
                     </span>
-                    <DynamicTechnicalVerification instrumentName={selectedApp.instrumentName} applicationType={selectedApp.applicationType} />
+                    <DynamicTechnicalVerification
+                      instrumentName={selectedApp.instrumentName}
+                      applicationType={selectedApp.applicationType}
+                      accuracyClass={selectedApp.instrument?.accuracyClass || selectedApp.instrument?.accuracy_class || selectedApp.accuracyClass}
+                      scaleInterval={selectedApp.instrument?.scaleInterval || selectedApp.instrument?.scale_interval}
+                      maxCapacity={selectedApp.instrument?.maxCapacity}
+                    />
                   </div>
 
                   <div className="p-3 bg-slate-50 rounded-xl border border-slate-200">
@@ -493,6 +501,24 @@ export const ReviewApplicationsPage = () => {
                     </ul>
                   </div>
                 )}
+
+                {selectedApp.verificationHistory?.length > 1 && (
+                  <div className="pt-2 border-t border-black/10 mt-2 space-y-1.5">
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase">Prior Verification Attempts</span>
+                    {selectedApp.verificationHistory.slice(1).map((hist, hIdx) => (
+                      <div key={hIdx} className="p-2 bg-neutral-50 rounded text-xs flex justify-between items-center">
+                        <div>
+                          <span className="font-bold text-neutral-700">Attempt #{selectedApp.verificationHistory.length - 1 - hIdx}: </span>
+                          <span className={`font-bold ${hist.outcome === 'PASS' ? 'text-emerald-700' : 'text-red-700'}`}>{hist.outcome}</span>
+                          {hist.rejectionReason && <span className="text-neutral-500"> — {hist.rejectionReason}</span>}
+                        </div>
+                        <span className="text-[10px] text-neutral-400 font-mono">
+                          {hist.createdAt ? new Date(hist.createdAt).toLocaleDateString('en-IN') : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
@@ -556,18 +582,62 @@ export const ReviewApplicationsPage = () => {
                 {assignModalApp.assignedOfficerName ? 'Reassign / Change Officer' : 'Assign Authorized Officer'}
               </p>
 
+              {/* Route Selector: LMO vs GATC */}
+              <div className="space-y-1.5">
+                <label className="block text-[11px] font-bold text-[#003943]">Verification Authority Route</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerifierType('LMO');
+                      const firstLmo = officers.find((o) => (o.officerType || 'LMO') === 'LMO');
+                      if (firstLmo) setSelectedOfficerId(firstLmo.id);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      verifierType === 'LMO'
+                        ? 'border-[#00959C] bg-[#003943] text-white shadow-xs'
+                        : 'border-[#003943]/20 bg-[#FDF9F6] text-[#003943]'
+                    }`}
+                  >
+                    <ShieldCheck className="w-3.5 h-3.5" />
+                    <span>LMO Officer ({officers.filter(o => (o.officerType || 'LMO') === 'LMO').length})</span>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setVerifierType('GATC');
+                      const firstGatc = officers.find((o) => o.officerType === 'GATC');
+                      if (firstGatc) setSelectedOfficerId(firstGatc.id);
+                    }}
+                    className={`p-2.5 rounded-xl border text-center font-bold text-xs transition-all flex items-center justify-center gap-1.5 ${
+                      verifierType === 'GATC'
+                        ? 'border-[#00959C] bg-[#003943] text-white shadow-xs'
+                        : 'border-[#003943]/20 bg-[#FDF9F6] text-[#003943]'
+                    }`}
+                  >
+                    <Building2 className="w-3.5 h-3.5" />
+                    <span>GATC Centre ({officers.filter(o => o.officerType === 'GATC').length})</span>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#003943]">Select Officer / Centre</label>
+                <label className="block text-[11px] font-bold text-[#003943]">
+                  Select Authorized Inspector / Centre ({verifierType})
+                </label>
                 <select
                   value={selectedOfficerId}
                   onChange={(e) => setSelectedOfficerId(e.target.value)}
                   className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#003943]"
                 >
-                  {officers.map((off) => (
-                    <option key={off.id} value={off.id}>
-                      {off.name} ({off.role} — ★ {off.rating})
-                    </option>
-                  ))}
+                  {officers
+                    .filter((off) => (off.officerType || 'LMO') === verifierType)
+                    .map((off) => (
+                      <option key={off.id} value={off.id}>
+                        {off.name} ({off.role} — ★ {off.rating})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -646,7 +716,13 @@ export const ReviewApplicationsPage = () => {
             </div>
 
             {/* Dynamic Technical Verification Section */}
-            <DynamicTechnicalVerification instrumentName={inspectModalApp.instrumentName} applicationType={inspectModalApp.applicationType} />
+            <DynamicTechnicalVerification
+              instrumentName={inspectModalApp.instrumentName}
+              applicationType={inspectModalApp.applicationType}
+              accuracyClass={inspectModalApp.instrument?.accuracyClass || inspectModalApp.instrument?.accuracy_class || inspectModalApp.accuracyClass}
+              scaleInterval={inspectModalApp.instrument?.scaleInterval || inspectModalApp.instrument?.scale_interval}
+              maxCapacity={inspectModalApp.instrument?.maxCapacity}
+            />
 
             <div className="space-y-1.5">
               <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
@@ -713,6 +789,21 @@ export const ReviewApplicationsPage = () => {
                       </label>
                     ))}
                   </div>
+
+                  {failReason === 'Other' && (
+                    <div className="mt-2.5 space-y-1">
+                      <label className="block text-[11px] font-bold text-red-900">
+                        Specify Custom Reason for Failure <span className="text-red-600">*</span>
+                      </label>
+                      <textarea
+                        rows={2}
+                        value={customOtherReason}
+                        onChange={(e) => setCustomOtherReason(e.target.value)}
+                        placeholder="Provide details on why the instrument failed inspection..."
+                        className="w-full bg-white border border-red-300 rounded-xl p-2.5 text-xs text-red-900 font-medium placeholder:text-red-300 focus:outline-none focus:ring-2 focus:ring-red-500"
+                      />
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -737,16 +828,24 @@ export const ReviewApplicationsPage = () => {
                 variant="accent"
                 loading={inspectLoading}
                 onClick={async () => {
+                  if (inspectionOutcome === 'FAIL') {
+                    const reasonToSubmit = failReason === 'Other' ? customOtherReason.trim() : failReason;
+                    if (!reasonToSubmit || reasonToSubmit === 'Other') {
+                      alert("Please provide the specific explanation for failure when 'Other' is selected.");
+                      return;
+                    }
+                  }
                   setInspectLoading(true);
+                  const finalReason = failReason === 'Other' ? customOtherReason.trim() : failReason;
                   const finalObs = inspectionOutcome === 'FAIL'
-                    ? `[Rejection Reason: ${failReason}] ${inspectionRemarks}`
+                    ? `[Rejection Reason: ${finalReason}] ${inspectionRemarks}`
                     : inspectionRemarks;
 
                   await submitVerificationResult({
                     applicationId: inspectModalApp.id,
                     result: inspectionOutcome,
                     observations: finalObs,
-                    evidencePhotos: ['https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80'],
+                    evidencePhotos: [],
                     officerName: inspectModalApp.assignedOfficerName || 'Inspector Rajesh V. Sharma'
                   });
                   setInspectLoading(false);

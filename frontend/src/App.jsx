@@ -28,6 +28,7 @@ import { AllApplicationsPage } from './pages/lmd/AllApplicationsPage';
 import { OfficerDashboard } from './pages/officer/OfficerDashboard';
 import { AssignedQueuePage } from './pages/officer/AssignedQueuePage';
 import { VerificationFormPage } from './pages/officer/VerificationFormPage';
+import { CaseRecordPage } from './pages/officer/CaseRecordPage';
 
 // Route Guard Component
 const ProtectedRoute = ({ children, allowedRole }) => {
@@ -80,6 +81,7 @@ export function App() {
               <Route path="officer" element={<ProtectedRoute allowedRole="officer"><OfficerDashboard /></ProtectedRoute>} />
               <Route path="officer/dashboard" element={<ProtectedRoute allowedRole="officer"><OfficerDashboard /></ProtectedRoute>} />
               <Route path="officer/queue" element={<ProtectedRoute allowedRole="officer"><AssignedQueuePage /></ProtectedRoute>} />
+              <Route path="officer/record/:appId" element={<ProtectedRoute allowedRole="officer"><CaseRecordPage /></ProtectedRoute>} />
               <Route path="officer/verify" element={<ProtectedRoute allowedRole="officer"><VerificationFormPage /></ProtectedRoute>} />
               <Route path="officer/verify/new" element={<ProtectedRoute allowedRole="officer"><VerificationFormPage /></ProtectedRoute>} />
               <Route path="lmo" element={<ProtectedRoute allowedRole="officer"><OfficerDashboard /></ProtectedRoute>} />

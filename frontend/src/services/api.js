@@ -89,39 +89,47 @@ export const mockApiService = {
       // Deduplicate by application ID defensively
       const uniqueData = Array.from(new Map(data.map(item => [item.id, item])).values());
       return uniqueData.map(app => {
-      const verification = app.verification_results && app.verification_results.length > 0
-        ? app.verification_results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
-        : null;
+        // Sort all verification results newest first (created_at DESC)
+        const sortedVerifications = Array.isArray(app.verification_results)
+          ? [...app.verification_results].sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0))
+          : [];
 
-      return {
-      id: app.id,
-      applicationNumber: app.application_number,
-      instrumentId: app.instrument_id,
-      instrumentName: app.instruments ? app.instruments.instrument_name : 'Unknown Instrument',
-      applicantName: app.profiles ? app.profiles.name : 'Unknown Applicant',
-      applicantId: app.applicant_id,
-      applicationType: app.application_type,
-      submissionDate: app.submitted_at,
-      preferredDate: app.preferred_date,
-      status: app.status,
-      assignedOfficerId: app.assigned_officer_id,
-      assignedOfficerName: app.officers && app.officers.profiles ? app.officers.profiles.name : null,
-      assignedDate: app.assigned_date,
-      scheduledInspectionDate: app.scheduled_inspection_date,
-      inspectionLocation: app.inspection_location,
-      documents: app.documents,
-      notes: app.notes,
-      timeline: [], // Will need app_timeline fetch if required, keeping empty array for now to prevent crashes
-      
-      verification: verification ? {
-        outcome: verification.outcome,
-        officerRemarks: verification.officer_remarks,
-        rejectionReason: verification.rejection_reason,
-        checklistResults: verification.checklist_results,
-        technicalTestResults: verification.technical_test_results,
-        photoEvidenceUrls: verification.photo_evidence_urls,
-        createdAt: verification.created_at
-      } : null,
+        const mapVerificationItem = (v) => v ? ({
+          id: v.id,
+          outcome: v.outcome,
+          officerRemarks: v.officer_remarks,
+          rejectionReason: v.rejection_reason,
+          checklistResults: v.checklist_results,
+          technicalTestResults: v.technical_test_results,
+          photoEvidenceUrls: v.photo_evidence_urls,
+          verifiedAt: v.verified_at,
+          createdAt: v.created_at
+        }) : null;
+
+        const latestVerification = sortedVerifications.length > 0 ? sortedVerifications[0] : null;
+
+        return {
+          id: app.id,
+          applicationNumber: app.application_number,
+          instrumentId: app.instrument_id,
+          instrumentName: app.instruments ? app.instruments.instrument_name : 'Unknown Instrument',
+          applicantName: app.profiles ? app.profiles.name : 'Unknown Applicant',
+          applicantId: app.applicant_id,
+          applicationType: app.application_type,
+          submissionDate: app.submitted_at,
+          preferredDate: app.preferred_date,
+          status: app.status,
+          assignedOfficerId: app.assigned_officer_id,
+          assignedOfficerName: app.officers && app.officers.profiles ? app.officers.profiles.name : null,
+          assignedDate: app.assigned_date,
+          scheduledInspectionDate: app.scheduled_inspection_date,
+          inspectionLocation: app.inspection_location,
+          documents: app.documents,
+          notes: app.notes,
+          timeline: [],
+          
+          verification: mapVerificationItem(latestVerification),
+          verificationHistory: sortedVerifications.map(mapVerificationItem),
       
       // Full Nested Objects for Case Reference
       instrument: app.instruments ? {
@@ -309,13 +317,57 @@ export const mockApiService = {
     return data.map(o => ({
       id: o.id,
       userId: o.user_id,
-      name: o.profiles ? o.profiles.name : 'Unknown',
+      name: o.profiles ? o.profiles.name : (o.designation || 'Unknown Verifier'),
       role: o.designation,
       zone: o.zone,
       rating: o.rating,
-      activeCount: o.active_assignments_count
+      activeCount: o.active_assignments_count,
+      officerType: o.officer_type,   // 'LMO' | 'GATC'
+      employeeCode: o.employee_code,
+      email: o.email,
+      phone: o.phone,
+      isAvailable: o.is_available
+    }));
+  },
+
+  // Upload inspection evidence photo to Supabase Storage
+  async uploadEvidencePhoto(applicationId, file) {
+    const ext = file.name.split('.').pop();
+    const path = `${applicationId}/${Date.now()}_${file.name.replace(/[^a-zA-Z0-9._-]/g, '_')}`;
+    const { data, error } = await supabase.storage
+      .from('verification-evidence')
+      .upload(path, file, { upsert: false, contentType: file.type });
+    if (error) throw error;
+    // Return the stable storage path (NOT a signed URL — signed URLs are generated on-demand)
+    return data.path;
+  },
+
+  // Generate a short-lived signed URL for viewing evidence
+  async getEvidenceSignedUrl(storagePath, expiresInSeconds = 3600) {
+    const { data, error } = await supabase.storage
+      .from('verification-evidence')
+      .createSignedUrl(storagePath, expiresInSeconds);
+    if (error) return null;
+    return data.signedUrl;
+  },
+
+  // Fetch timeline events for an application
+  async getApplicationTimeline(applicationId) {
+    const { data, error } = await supabase
+      .from('app_timeline')
+      .select('*')
+      .eq('application_id', applicationId)
+      .order('created_at', { ascending: true });
+    if (error) return [];
+    return data.map(t => ({
+      id: t.id,
+      eventType: t.event_type,
+      step: t.step,
+      oldStatus: t.old_status,
+      newStatus: t.new_status,
+      actorRole: t.actor_role,
+      message: t.message,
+      createdAt: t.created_at
     }));
   }
 };
-
-

@@ -49,14 +49,14 @@ export const BusinessDashboard = () => {
   });
 
   // 4. In Progress Applications
-  const myApplications = applications.filter(app => app.applicantId === user?.id);
-  const myInProgressApplications = myApplications.filter(app => 
-    ['submitted', 'under_review', 'assigned', 'in_progress'].includes(app.status)
-  );
+  const myApplications = [...applications]
+    .filter(app => app.applicantId === user?.id)
+    .sort((a, b) => new Date(b.submissionDate || b.created_at) - new Date(a.submissionDate || a.created_at));
+  
 
   const certifiedCount = myCertifiedInstruments.length;
   const expiringCount = myExpiringCertificates.length;
-  const inProgressCount = myInProgressApplications.length;
+  const inProgressCount = myApplications.filter(app => ['submitted', 'under_review', 'assigned', 'in_progress'].includes(app.status)).length;
 
   return (
     <div className="w-full space-y-7 selection:bg-[#02B7BF] selection:text-white pb-16">
@@ -225,22 +225,22 @@ export const BusinessDashboard = () => {
         )}
       </div>
 
-      {/* 6. YOUR APPLICATIONS SECTION */}
+      {/* 6. RECENT APPLICATIONS PREVIEW */}
       <div className="space-y-3 pt-2">
         <div className="flex items-center justify-between">
           <h2 className="text-lg sm:text-xl font-serif font-bold text-[#003943]">
-            Your applications
+            My Applications
           </h2>
           <button
             type="button"
+            onClick={() => navigate('/business/applications')}
             className="text-xs font-bold text-[#00959C] hover:underline"
           >
-            See all
+            View all applications &rarr;
           </button>
         </div>
 
         {myApplications.length === 0 ? (
-          /* EMPTY STATE CARD */
           <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
             <div className="w-12 h-12 rounded-full bg-[#E0F5F6] text-[#00959C] flex items-center justify-center mx-auto mb-1">
               <FileText className="w-6 h-6" />
@@ -251,70 +251,29 @@ export const BusinessDashboard = () => {
             </p>
           </div>
         ) : (
-          /* POPULATED ITEMS */
           <div className="space-y-3">
-            {myApplications.map((app) => (
+            {myApplications.slice(0, 5).map((app) => (
               <div key={app.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
                 <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-[#E0F5F6] text-[#00959C] flex items-center justify-center shrink-0">
                     <FileText className="w-5 h-5" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{app.instrumentName}</h4>
-                    <p className="text-xs text-[#003943]/60 capitalize">{app.status}</p>
+                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{app.instrumentName} <span className="ml-2 text-xs font-mono text-[#003943]/50">{app.id}</span></h4>
+                    <p className="text-xs text-[#003943]/60">
+                      Status: <span className="font-semibold capitalize text-[#003943]">{app.status.replace('_', ' ')}</span>
+                      {app.assignedOfficerName && (' • Assigned: ' + app.assignedOfficerName)}
+                      {app.scheduledInspectionDate && (' • Scheduled: ' + app.scheduledInspectionDate)}
+                    </p>
                   </div>
                 </div>
-                <span className="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-bold shrink-0 capitalize">
-                  {app.status}
-                </span>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-
-      {/* 7. UNDER REVIEW / ASSIGNED SECTION */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center justify-between">
-          <h2 className="text-lg sm:text-xl font-serif font-bold text-[#003943]">
-            Under review / Assigned
-          </h2>
-          <button
-            type="button"
-            className="text-xs font-bold text-[#00959C] hover:underline"
-          >
-            See all
-          </button>
-        </div>
-
-        {inProgressCount === 0 ? (
-          /* EMPTY STATE CARD */
-          <div className="bg-white rounded-2xl p-8 border border-[#003943]/15 shadow-xs text-center space-y-2">
-            <div className="w-12 h-12 rounded-full bg-[#E0F5F6] text-[#00959C] flex items-center justify-center mx-auto mb-1">
-              <ShieldCheck className="w-6 h-6" />
-            </div>
-            <p className="font-serif font-bold text-[#003943] text-base">No items under review or assigned</p>
-            <p className="text-xs text-[#003943]/60 max-w-sm mx-auto">
-              Applications under LMD administration review or assigned to an officer will be listed here.
-            </p>
-          </div>
-        ) : (
-          /* POPULATED ITEMS */
-          <div className="space-y-3">
-            {myInProgressApplications.map((app) => (
-              <div key={app.id} className="bg-white rounded-2xl p-4 sm:p-5 border border-[#003943]/15 shadow-xs flex items-center justify-between gap-4">
-                <div className="flex items-center gap-3.5">
-                  <div className="w-10 h-10 rounded-xl bg-cyan-50 text-cyan-700 flex items-center justify-center shrink-0">
-                    <UserCheck className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <h4 className="font-bold text-[#003943] text-sm sm:text-base">{app.instrumentName}</h4>
-                    <p className="text-xs text-[#003943]/60">{app.assignedOfficerName ? `Assigned to ${app.assignedOfficerName}` : 'Under Review'}</p>
-                  </div>
-                </div>
-                <span className="px-3 py-1 rounded-full bg-cyan-100 text-cyan-800 text-xs font-bold shrink-0 capitalize">
-                  {app.status}
-                </span>
+                <button
+                  type="button"
+                  onClick={() => navigate('/business/applications')}
+                  className="text-[#00959C] text-xs font-bold hover:underline shrink-0"
+                >
+                  View &rarr;
+                </button>
               </div>
             ))}
           </div>
@@ -323,4 +282,10 @@ export const BusinessDashboard = () => {
     </div>
   );
 };
+
+
+
+
+
+
 

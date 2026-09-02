@@ -46,6 +46,11 @@ export const LmdDashboard = () => {
   const [reviewRecordApp, setReviewRecordApp] = useState(null);
 
   // Compute Metrics Bar Counts as requested
+  const actionableApps = [...applications]
+    .filter(app => ['submitted', 'in_progress', 'assigned'].includes(app.status))
+    .sort((a, b) => new Date(b.submissionDate || b.created_at) - new Date(a.submissionDate || a.created_at))
+    .slice(0, 5);
+
   const metrics = {
     newApps: 12,
     underReview: 7,
@@ -129,19 +134,26 @@ export const LmdDashboard = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-[#003943]/10">
           <div>
             <h2 className="font-serif font-bold text-xl sm:text-2xl text-[#003943]">
-              Incoming Business Cases & Route Engine
+              Actionable Cases Preview
             </h2>
             <p className="text-xs text-[#003943]/70">
               Review application completeness, check eligibility rules, and assign authorized verifier (LMO / GATC).
             </p>
           </div>
-          <span className="px-3 py-1 rounded-full bg-[#E0F5F6] text-[#00959C] text-xs font-bold shrink-0">
-            {applications.length} Active Cases
-          </span>
+          <div className="flex items-center gap-3">
+            <span className="px-3 py-1 rounded-full bg-[#E0F5F6] text-[#00959C] text-xs font-bold shrink-0">
+              {actionableApps.length} Shown
+            </span>
+            <Link to="/lmd/review" className="text-xs font-bold text-[#00959C] hover:underline">
+              Review all &rarr;
+            </Link>
+          </div>
         </div>
 
         <div className="space-y-4">
-          {applications.map((app) => {
+          {actionableApps.length === 0 ? (
+            <div className="p-6 text-center text-[#003943]/60 text-sm font-semibold">No actionable cases pending.</div>
+          ) : actionableApps.map((app) => {
             const eligibility = getEligibleRoute(app.instrumentName);
             const isAssigned = app.status === 'assigned' || app.status === 'in_progress';
             const isCompleted = app.status === 'passed' || app.status === 'failed';
@@ -417,13 +429,14 @@ export const LmdDashboard = () => {
                   >
                     <Building2 className="w-4 h-4" />
                     <span>GATC Approved Centre</span>
+                    <span>GATC Approved Centre ({officers.filter(o => o.officerType === 'GATC').length})</span>
                   </button>
                 </div>
               </div>
 
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
-                  Select Authorized Inspector / Centre <span className="text-red-500">*</span>
+                  Select Authorized Inspector / Centre ({verifierType}) <span className="text-red-500">*</span>
                 </label>
                 <select
                   value={selectedOfficerId}
@@ -431,11 +444,13 @@ export const LmdDashboard = () => {
                   required
                   className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-[#003943]"
                 >
-                  {officers.map((off) => (
-                    <option key={off.id} value={off.id}>
-                      {off.name} ({off.role} — {off.zone})
-                    </option>
-                  ))}
+                  {officers
+                    .filter((off) => (off.officerType || 'LMO') === verifierType)
+                    .map((off) => (
+                      <option key={off.id} value={off.id}>
+                        {off.name} ({off.role} — {off.zone})
+                      </option>
+                    ))}
                 </select>
               </div>
 
@@ -501,4 +516,7 @@ export const LmdDashboard = () => {
     </div>
   );
 };
+
+
+
 

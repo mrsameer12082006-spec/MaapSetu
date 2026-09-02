@@ -95,6 +95,18 @@ export const DataProvider = ({ children }) => {
     return response; // Should return { success: true, certificateId: '...' }
   };
 
+  const uploadEvidencePhoto = async (applicationId, file) => {
+    return await mockApiService.uploadEvidencePhoto(applicationId, file);
+  };
+
+  const getEvidenceSignedUrl = async (storagePath) => {
+    return await mockApiService.getEvidenceSignedUrl(storagePath);
+  };
+
+  const getApplicationTimeline = async (applicationId) => {
+    return await mockApiService.getApplicationTimeline(applicationId);
+  };
+
   return (
     <DataContext.Provider
       value={{
@@ -108,6 +120,9 @@ export const DataProvider = ({ children }) => {
         assignOfficer,
         submitVerificationResult,
         generateCertificate,
+        uploadEvidencePhoto,
+        getEvidenceSignedUrl,
+        getApplicationTimeline,
         loading,
         loadData
       }}

@@ -216,6 +216,24 @@ export const MyApplicationsPage = () => {
                     {selectedApp.verification.officerRemarks || 'No remarks provided.'}
                   </span>
                 </div>
+
+                {selectedApp.verificationHistory?.length > 1 && (
+                  <div className="pt-2 border-t border-black/10 mt-2 space-y-1">
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase">Prior Verification Attempts</span>
+                    {selectedApp.verificationHistory.slice(1).map((hist, hIdx) => (
+                      <div key={hIdx} className="p-2 bg-white/70 rounded text-[11px] flex justify-between items-center">
+                        <div>
+                          <span className="font-bold">Attempt #{selectedApp.verificationHistory.length - 1 - hIdx}: </span>
+                          <span className={`font-bold ${hist.outcome === 'PASS' ? 'text-emerald-700' : 'text-red-700'}`}>{hist.outcome}</span>
+                          {hist.rejectionReason && <span className="text-neutral-600"> — {hist.rejectionReason}</span>}
+                        </div>
+                        <span className="text-[10px] text-neutral-400 font-mono">
+                          {hist.createdAt ? new Date(hist.createdAt).toLocaleDateString('en-IN') : ''}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 

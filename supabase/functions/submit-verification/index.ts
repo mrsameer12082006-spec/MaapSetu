@@ -64,8 +64,13 @@ serve(async (req) => {
       throw new Error('Unauthorized. You are not assigned to this application.')
     }
 
-    if (outcome === 'FAIL' && !rejection_reason) {
-      throw new Error('Rejection reason is required when outcome is FAIL.')
+    if (outcome === 'FAIL') {
+      if (!rejection_reason || typeof rejection_reason !== 'string' || !rejection_reason.trim()) {
+        throw new Error('Rejection reason is required when outcome is FAIL.')
+      }
+      if (rejection_reason.trim() === 'Other') {
+        throw new Error('Specific rejection explanation must be provided when "Other" failure reason is selected.')
+      }
     }
 
     // Insert verification result
@@ -76,7 +81,7 @@ serve(async (req) => {
       checklist_results: checklist_results || {},
       technical_test_results: technical_test_results || {},
       officer_remarks: officer_remarks,
-      rejection_reason: outcome === 'FAIL' ? rejection_reason : null,
+      rejection_reason: outcome === 'FAIL' ? rejection_reason.trim() : null,
       photo_evidence_urls: photo_evidence_urls || [],
       verified_at: new Date().toISOString()
     })
@@ -106,7 +111,7 @@ serve(async (req) => {
       application_id: applicationId,
       event_type: 'VERIFICATION',
       step: `Verification ${outcome}`,
-      old_status: 'assigned',
+      old_status: app?.status || 'assigned',
       new_status: newStatus,
       actor_user_id: user.id,
       actor_role: 'officer',
