@@ -24,15 +24,15 @@ export const LoginPage = () => {
       }
     }
   }, [user, currentRole, searchParams, navigate]);
-  const [username, setUsername] = useState('v.mehta@apexlogistics.in');
-  const [password, setPassword] = useState('password123');
+  const [username, setUsername] = useState('business.demo@maapsetu.demo');
+  const [password, setPassword] = useState('MaapSetu@2026');
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
 
   // Sign Up Mode State (Available for Business Role)
   const [isSignUp, setIsSignUp] = useState(false);
   const [fullName, setFullName] = useState('Vikramaditya Mehta');
-  const [signUpEmail, setSignUpEmail] = useState('v.mehta@apexlogistics.in');
+  const [signUpEmail, setSignUpEmail] = useState('business.demo@maapsetu.demo');
   const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
   const [signUpPassword, setSignUpPassword] = useState('password123');
   const [confirmPassword, setConfirmPassword] = useState('password123');
@@ -106,9 +106,9 @@ export const LoginPage = () => {
     setLoginSuccess(false);
     setSignUpSuccess(false);
     setErrorMsg('');
-    if (roleKey === USER_ROLES.BUSINESS) setUsername('v.mehta@apexlogistics.in');
-    else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('admin.ngp@maapsetu.gov.in');
-    else if (roleKey === USER_ROLES.OFFICER) setUsername('r.sharma.lmo@maapsetu.gov.in');
+    if (roleKey === USER_ROLES.BUSINESS) setUsername('business.demo@maapsetu.demo');
+    else if (roleKey === USER_ROLES.LMD_ADMIN) setUsername('lmd01@maapsetu.demo');
+    else if (roleKey === USER_ROLES.OFFICER) setUsername('lmo01@maapsetu.demo');
   };
 
   return (
