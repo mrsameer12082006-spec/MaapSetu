@@ -59,7 +59,11 @@ export const mockApiService = {
       status: 'under_verification'
     };
 
-    const { data, error } = await supabase.from('instruments').insert([dbPayload]).select().single();
+    const { data, error } = await supabase
+      .from('instruments')
+      .upsert([dbPayload], { onConflict: 'serial_number' })
+      .select()
+      .single();
     if (error) throw error;
     
     // Convert back for frontend
