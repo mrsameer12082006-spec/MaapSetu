@@ -50,6 +50,7 @@ export const OfficerDashboard = () => {
   const [remarks, setRemarks] = useState('All 6 physical inspection criteria passed. Lead seal affixed & QR code digital stamp generated.');
   const [outcome, setOutcome] = useState('PASS'); // 'PASS' or 'FAIL'
   const [failReason, setFailReason] = useState('MPE exceeded');
+  const [customOtherReason, setCustomOtherReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
 
@@ -70,6 +71,14 @@ export const OfficerDashboard = () => {
   const handleFinalSubmit = async (e) => {
     e.preventDefault();
     if (!activeApp) return;
+
+    if (outcome === 'FAIL' && failReason === 'Other') {
+      if (!customOtherReason || !customOtherReason.trim()) {
+        alert("Please provide the reason for failure.");
+        return;
+      }
+    }
+
     setSubmitting(true);
 
     try {
@@ -79,7 +88,7 @@ export const OfficerDashboard = () => {
         checklist_results: checklist,
         technical_test_results: technicalResults,
         officer_remarks: remarks,
-        rejection_reason: outcome === 'FAIL' ? failReason : null,
+        rejection_reason: outcome === 'FAIL' ? (failReason === 'Other' ? customOtherReason.trim() : failReason) : null,
         photo_evidence_urls: [
           'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
           'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
@@ -388,7 +397,10 @@ export const OfficerDashboard = () => {
                 <div className="grid grid-cols-2 gap-4">
                   <button
                     type="button"
-                    onClick={() => setOutcome('PASS')}
+                    onClick={() => {
+                      setOutcome('PASS');
+                      setCustomOtherReason('');
+                    }}
                     className={`py-3.5 rounded-2xl font-extrabold text-sm transition-all flex items-center justify-center gap-2 ${
                       outcome === 'PASS'
                         ? 'bg-emerald-700 text-white shadow-md ring-2 ring-emerald-500'
@@ -442,13 +454,33 @@ export const OfficerDashboard = () => {
                             name="failReason"
                             value={reason}
                             checked={failReason === reason}
-                            onChange={(e) => setFailReason(e.target.value)}
+                            onChange={(e) => {
+                              setFailReason(e.target.value);
+                              if (e.target.value !== 'Other') {
+                                setCustomOtherReason('');
+                              }
+                            }}
                             className="w-4 h-4 accent-red-700"
                           />
                           <span>{reason}</span>
                         </label>
                       ))}
                     </div>
+
+                    {failReason === 'Other' && (
+                      <div className="pt-2">
+                        <label className="block font-bold text-xs uppercase tracking-wider text-red-900 mb-1.5">
+                          OTHER REASON FOR FAILURE <span className="text-red-600">*</span>
+                        </label>
+                        <textarea
+                          rows={2}
+                          value={customOtherReason}
+                          onChange={(e) => setCustomOtherReason(e.target.value)}
+                          placeholder="Describe the reason for rejection..."
+                          className="w-full rounded-xl border border-red-200 text-xs text-red-900 bg-white p-3 focus:outline-none focus:ring-2 focus:ring-red-500"
+                        />
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

@@ -174,6 +174,12 @@ export const LmdDashboard = () => {
                     <p className="text-xs text-[#003943]/70 flex items-center gap-1">
                       <MapPin className="w-3.5 h-3.5 text-[#00959C]" /> Location: {app.inspectionLocation}
                     </p>
+
+                    {app.preferredDate && !isAssigned && !isCompleted && (
+                      <p className="text-xs text-[#00959C] font-semibold flex items-center gap-1 mt-1">
+                        Preferred Date: {app.preferredDate}
+                      </p>
+                    )}
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 shrink-0">
@@ -196,7 +202,12 @@ export const LmdDashboard = () => {
                     ) : (
                       <button
                         type="button"
-                        onClick={() => setSelectedApp(app)}
+                        onClick={() => {
+                          setSelectedApp(app);
+                          if (app.assignedOfficerId) setSelectedOfficerId(app.assignedOfficerId);
+                          const initDate = app.scheduledInspectionDate || app.preferredDate || '';
+                          setScheduledDate(initDate);
+                        }}
                         className="px-5 py-2.5 rounded-full bg-[#003943] hover:bg-[#002B33] text-white font-bold text-xs sm:text-sm transition-all shadow-sm flex items-center gap-2"
                       >
                         <UserCheck className="w-4 h-4 text-[#02B7BF]" />
@@ -430,9 +441,20 @@ export const LmdDashboard = () => {
                 </select>
               </div>
 
+              {selectedApp.preferredDate && (
+                <div className="space-y-1.5 mb-3">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#003943]/70">
+                    BUSINESS REQUEST: Preferred Inspection Date
+                  </label>
+                  <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 text-xs sm:text-sm font-bold text-slate-700 cursor-not-allowed">
+                    {selectedApp.preferredDate}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1.5">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
-                  Scheduled Inspection Date <span className="text-red-500">*</span>
+                  LMD DECISION: Scheduled Inspection Date <span className="text-red-500">*</span>
                 </label>
                 <input
                   type="date"
@@ -441,6 +463,7 @@ export const LmdDashboard = () => {
                   required
                   className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-xs sm:text-sm font-semibold text-[#003943]"
                 />
+                <p className="text-[10px] text-neutral-500 mt-1">Requested by business. You may adjust the final inspection date.</p>
               </div>
 
               <div className="space-y-1.5">

@@ -47,7 +47,7 @@ export const AssignedQueuePage = () => {
     {
       header: 'Scheduled Date',
       key: 'scheduledInspectionDate',
-      render: (row) => <span className="text-xs font-semibold text-neutral-900">{row.scheduledInspectionDate || row.preferredDate}</span>
+      render: (row) => <span className="text-xs font-semibold text-neutral-900">{row.scheduledInspectionDate || 'Not Scheduled'}</span>
     },
     {
       header: 'Status',

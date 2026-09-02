@@ -109,13 +109,16 @@ export const ReviewApplicationsPage = () => {
               </Button>
             ) : (
               <Button
-                variant="primary"
+                variant="secondary"
                 size="sm"
                 icon={UserCheck}
                 onClick={() => {
                   setAssignModalApp(row);
                   if (row.assignedOfficerId) setSelectedOfficerId(row.assignedOfficerId);
-                  if (row.scheduledInspectionDate) setScheduledDate(row.scheduledInspectionDate);
+                  
+                  // Priority: 1. Scheduled Date 2. Preferred Date 3. Empty
+                  const initDate = row.scheduledInspectionDate || row.preferredDate || '';
+                  setScheduledDate(initDate);
                 }}
               >
                 Assigned Officer
@@ -198,6 +201,11 @@ export const ReviewApplicationsPage = () => {
                       const targetApp = selectedApp;
                       setSelectedApp(null);
                       setAssignModalApp(targetApp);
+                      if (targetApp.assignedOfficerId) setSelectedOfficerId(targetApp.assignedOfficerId);
+                      
+                      // Priority: 1. Scheduled Date 2. Preferred Date 3. Empty
+                      const initDate = targetApp.scheduledInspectionDate || targetApp.preferredDate || '';
+                      setScheduledDate(initDate);
                     }}
                   >
                     Assigned Officer
@@ -483,14 +491,28 @@ export const ReviewApplicationsPage = () => {
                 </select>
               </div>
 
+              {assignModalApp.preferredDate && (
+                <div className="space-y-1 mb-2">
+                  <label className="block text-[10px] font-bold uppercase tracking-wider text-[#003943]/70">
+                    BUSINESS REQUEST: Preferred Inspection Date
+                  </label>
+                  <div className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-2.5 text-xs font-bold text-slate-700 cursor-not-allowed">
+                    {assignModalApp.preferredDate}
+                  </div>
+                </div>
+              )}
+
               <div className="space-y-1">
-                <label className="block text-[11px] font-bold text-[#003943]">Scheduled Inspection Date</label>
+                <label className="block text-[11px] font-bold text-[#003943]">
+                  LMD DECISION: Scheduled Inspection Date
+                </label>
                 <input
                   type="date"
                   value={scheduledDate}
                   onChange={(e) => setScheduledDate(e.target.value)}
                   className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-3.5 py-2.5 text-xs font-bold text-[#003943]"
                 />
+                <p className="text-[10px] text-neutral-500 mt-1">Requested by business. You may adjust the final inspection date.</p>
               </div>
 
               <div className="flex items-center justify-end gap-2 pt-3">
