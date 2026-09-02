@@ -32,11 +32,20 @@ export const ReviewApplicationsPage = () => {
     }
   }, [officers, selectedOfficerId]);
 
-  const pendingReviewApps = applications.filter((app) =>
-    app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.instrumentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    app.applicantName.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const actionableStatuses = ['submitted', 'in_progress', 'assigned'];
+  const sortedApps = [...applications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
+  const pendingReviewApps = sortedApps.filter(app => actionableStatuses.includes(app.status)).filter((app) => {
+    const search = searchTerm.trim().toLowerCase();
+    if (!search) return true;
+    return (
+      app.id?.toLowerCase().includes(search) ||
+      app.applicationNumber?.toLowerCase().includes(search) ||
+      app.applicantName?.toLowerCase().includes(search) ||
+      app.instrumentName?.toLowerCase().includes(search) ||
+      app.applicationType?.toLowerCase().includes(search) ||
+      app.assignedOfficerName?.toLowerCase().includes(search)
+    );
+  });
 
   const handleGenerateCert = async (appId) => {
     try {
@@ -85,6 +94,24 @@ export const ReviewApplicationsPage = () => {
       header: 'Status',
       key: 'status',
       render: (row) => <Badge status={row.status}>{row.status}</Badge>
+    },
+    {
+      header: 'Assigned Verifier',
+      key: 'assignedOfficerName',
+      render: (row) => (
+        <span className="text-xs font-medium text-neutral-900">
+          {row.assignedOfficerName || <span className="text-neutral-600 italic">Unassigned</span>}
+        </span>
+      )
+    },
+    {
+      header: 'Scheduled Date',
+      key: 'scheduledInspectionDate',
+      render: (row) => (
+        <span className="text-xs font-medium text-neutral-900">
+          {row.scheduledInspectionDate || <span className="text-neutral-600 italic">-</span>}
+        </span>
+      )
     },
     {
       header: 'Actions',
@@ -156,11 +183,10 @@ export const ReviewApplicationsPage = () => {
 
       {/* Review Modal */}
       {selectedApp && (
-        <Modal
-          isOpen={!!selectedApp}
+        <Modal isOpen={!!selectedApp}
           onClose={() => setSelectedApp(null)}
           title={`Administrative Document Review: ${selectedApp.id}`}
-          maxWidth="max-w-3xl"
+          maxWidth="max-w-5xl"
           footer={
             <div className="flex items-center gap-3">
               {selectedApp.status === 'passed' || selectedApp.status === 'inspection_passed' ? (
@@ -482,11 +508,10 @@ export const ReviewApplicationsPage = () => {
 
       {/* Assign Officer Details Modal (On Same Page - No Redirection) */}
       {assignModalApp && (
-        <Modal
-          isOpen={!!assignModalApp}
+        <Modal isOpen={!!assignModalApp}
           onClose={() => setAssignModalApp(null)}
           title={`Verifier Assignment: ${assignModalApp.id}`}
-          maxWidth="max-w-md"
+          maxWidth="max-w-2xl"
         >
           <div className="space-y-5 text-[#003943]">
             {/* Header info */}
@@ -594,11 +619,10 @@ export const ReviewApplicationsPage = () => {
 
       {/* Record Offline Inspection Result Modal */}
       {inspectModalApp && (
-        <Modal
-          isOpen={!!inspectModalApp}
+        <Modal isOpen={!!inspectModalApp}
           onClose={() => setInspectModalApp(null)}
           title={`Record Offline Inspection Result: ${inspectModalApp.id}`}
-          maxWidth="max-w-xl"
+          maxWidth="max-w-3xl"
         >
           <div className="space-y-5 text-[#003943]">
             <div className="p-3.5 bg-[#FDF9F6] rounded-2xl border border-[#003943]/15 text-xs space-y-1">
@@ -738,3 +762,9 @@ export const ReviewApplicationsPage = () => {
     </div>
   );
 };
+
+
+
+
+
+

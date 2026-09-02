@@ -13,14 +13,23 @@ export const AllApplicationsPage = () => {
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedApp, setSelectedApp] = useState(null);
 
-  const filteredApps = applications.filter((app) => {
-    const matchesSearch =
-      app.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.instrumentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      app.applicantName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesStatus = statusFilter === 'all' || app.status === statusFilter;
-    return matchesSearch && matchesStatus;
+  const sortedApps = [...applications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
+  const searchedApps = sortedApps.filter((app) => {
+    const search = searchTerm.trim().toLowerCase();
+    if (!search) return true;
+    return (
+      app.id?.toLowerCase().includes(search) ||
+      app.applicationNumber?.toLowerCase().includes(search) ||
+      app.applicantName?.toLowerCase().includes(search) ||
+      app.instrumentName?.toLowerCase().includes(search) ||
+      app.applicationType?.toLowerCase().includes(search) ||
+      app.assignedOfficerName?.toLowerCase().includes(search)
+    );
   });
+
+  const filteredApps = searchedApps.filter(app => statusFilter === 'all' || app.status === statusFilter);
+
+  const getStatusCount = (status) => searchedApps.filter(app => status === 'all' ? true : app.status === status).length;
 
   const columns = [
     {
@@ -39,14 +48,14 @@ export const AllApplicationsPage = () => {
       )
     },
     {
-      header: 'Instrument Specifications',
+      header: 'Instrument',
       key: 'instrumentName',
-      render: (row) => (
-        <div>
-          <p className="font-semibold text-neutral-900">{row.instrumentName}</p>
-          <p className="text-[11px] text-neutral-600">{row.applicationType}</p>
-        </div>
-      )
+      render: (row) => <span className="font-semibold text-neutral-900">{row.instrumentName}</span>
+    },
+    {
+      header: 'Application Type',
+      key: 'applicationType',
+      render: (row) => <span className="text-xs text-neutral-600">{row.applicationType}</span>
     },
     {
       header: 'Assigned Verifier',
@@ -54,6 +63,15 @@ export const AllApplicationsPage = () => {
       render: (row) => (
         <span className="text-xs font-medium text-neutral-900">
           {row.assignedOfficerName || <span className="text-neutral-600 italic">Unassigned</span>}
+        </span>
+      )
+    },
+    {
+      header: 'Scheduled Date',
+      key: 'scheduledInspectionDate',
+      render: (row) => (
+        <span className="text-xs font-medium text-neutral-900">
+          {row.scheduledInspectionDate || <span className="text-neutral-600 italic">-</span>}
         </span>
       )
     },
@@ -101,12 +119,12 @@ export const AllApplicationsPage = () => {
               onChange={(e) => setStatusFilter(e.target.value)}
               className="rounded-input border border-neutral-300 text-xs py-2 px-3 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
             >
-              <option value="all">All ({applications.length})</option>
-              <option value="submitted">Submitted</option>
-              <option value="assigned">Assigned</option>
-              <option value="in_progress">In Progress</option>
-              <option value="passed">Passed</option>
-              <option value="failed">Failed</option>
+              <option value="all">All ({getStatusCount('all')})</option>
+                <option value="submitted">Submitted ({getStatusCount('submitted')})</option>
+                <option value="assigned">Assigned ({getStatusCount('assigned')})</option>
+                <option value="in_progress">In Progress ({getStatusCount('in_progress')})</option>
+                <option value="passed">Passed ({getStatusCount('passed')})</option>
+                <option value="failed">Failed ({getStatusCount('failed')})</option>
             </select>
           </div>
         </div>
@@ -115,8 +133,7 @@ export const AllApplicationsPage = () => {
       <Table columns={columns} data={filteredApps} emptyMessage="No records match query." />
 
       {selectedApp && (
-        <Modal
-          isOpen={!!selectedApp}
+        <Modal maxWidth="max-w-4xl" isOpen={!!selectedApp}
           onClose={() => setSelectedApp(null)}
           title={`Master Application Record: ${selectedApp.id}`}
           footer={<Button variant="secondary" onClick={() => setSelectedApp(null)}>Close Record</Button>}
@@ -147,3 +164,8 @@ export const AllApplicationsPage = () => {
     </div>
   );
 };
+
+
+
+
+

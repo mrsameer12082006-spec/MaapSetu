@@ -191,14 +191,12 @@ export const LmdDashboard = () => {
                         <p className="text-[11px] text-[#003943]/60 mt-0.5">Date: {app.scheduledInspectionDate || 'Scheduled'}</p>
                       </div>
                     ) : isCompleted ? (
-                      <button
-                        type="button"
-                        onClick={() => setReviewRecordApp(app)}
-                        className="px-4 py-2 rounded-full bg-emerald-700 text-white font-bold text-xs hover:bg-emerald-800 transition-colors flex items-center gap-1.5"
-                      >
-                        <Award className="w-4 h-4 text-emerald-300" />
-                        <span>View Approved Record</span>
-                      </button>
+                      <div className="text-right">
+                        <span className="inline-block px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 text-xs font-bold">
+                          {app.status === 'passed' ? 'Passed' : 'Completed'} - {app.assignedOfficerName || 'Officer'}
+                        </span>
+                        <p className="text-[11px] text-[#003943]/60 mt-0.5">Date: {app.scheduledInspectionDate || 'Completed'}</p>
+                      </div>
                     ) : (
                       <button
                         type="button"
@@ -503,3 +501,4 @@ export const LmdDashboard = () => {
     </div>
   );
 };
+

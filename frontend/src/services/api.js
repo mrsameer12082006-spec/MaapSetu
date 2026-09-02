@@ -85,7 +85,10 @@ export const mockApiService = {
     `);
     if (error) throw error;
 
-    return data.map(app => {
+    
+      // Deduplicate by application ID defensively
+      const uniqueData = Array.from(new Map(data.map(item => [item.id, item])).values());
+      return uniqueData.map(app => {
       const verification = app.verification_results && app.verification_results.length > 0
         ? app.verification_results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
         : null;
@@ -314,4 +317,5 @@ export const mockApiService = {
     }));
   }
 };
+
 

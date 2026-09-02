@@ -85,7 +85,7 @@ export const BusinessDashboard = () => {
       </div>
 
       {/* 3. THREE SUMMARY STAT CARDS */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         {/* Card 1: Certified */}
         <div className="bg-white rounded-2xl p-5 border border-[#003943]/15 shadow-xs text-center space-y-1">
           <p className="text-3xl sm:text-4xl font-serif font-bold text-[#003943]">
@@ -323,3 +323,4 @@ export const BusinessDashboard = () => {
     </div>
   );
 };
+
