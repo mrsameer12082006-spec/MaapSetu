@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, useSearchParams, Link } from 'react-router-dom';
-import { Scale, Building2, UserCheck, ShieldCheck, ArrowRight, Lock, Sparkles, ArrowUpRight, ChevronDown, CheckCircle2, UserPlus, AlertCircle } from 'lucide-react';
+import { Scale, Building2, UserCheck, ShieldCheck, ArrowRight, Lock, Sparkles, ArrowUpRight, ChevronDown, CheckCircle2, UserPlus, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useAuth, USER_ROLES } from '../../context/AuthContext';
 
 export const LoginPage = () => {
@@ -22,6 +22,11 @@ export const LoginPage = () => {
   const [mobileNumber, setMobileNumber] = useState('+91 98765 43210');
   const [signUpPassword, setSignUpPassword] = useState('password123');
   const [confirmPassword, setConfirmPassword] = useState('password123');
+
+  // Password Visibility States
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showSignUpPassword, setShowSignUpPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   // Success Feedback Banners
   const [signUpSuccess, setSignUpSuccess] = useState(false);
@@ -249,26 +254,46 @@ export const LoginPage = () => {
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
                   Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={signUpPassword}
-                  onChange={(e) => setSignUpPassword(e.target.value)}
-                  required
-                  className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type={showSignUpPassword ? "text" : "password"}
+                    value={signUpPassword}
+                    onChange={(e) => setSignUpPassword(e.target.value)}
+                    required
+                    className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 pr-12 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowSignUpPassword(!showSignUpPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#003943]/60 hover:text-[#003943] focus:outline-none p-1 rounded-md"
+                    aria-label={showSignUpPassword ? "Hide password" : "Show password"}
+                  >
+                    {showSignUpPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
 
               <div className="space-y-1">
                 <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
-                <input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                  required
-                  className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
-                />
+                <div className="relative">
+                  <input
+                    type={showConfirmPassword ? "text" : "password"}
+                    value={confirmPassword}
+                    onChange={(e) => setConfirmPassword(e.target.value)}
+                    required
+                    className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 pr-12 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-[#003943]/60 hover:text-[#003943] focus:outline-none p-1 rounded-md"
+                    aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  >
+                    {showConfirmPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                  </button>
+                </div>
               </div>
             </div>
 
@@ -332,13 +357,23 @@ export const LoginPage = () => {
               <label className="block text-xs font-bold uppercase tracking-wider text-[#003943]/80">
                 Password <span className="text-red-500">*</span>
               </label>
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-                className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
-              />
+              <div className="relative">
+                <input
+                  type={showLoginPassword ? "text" : "password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="w-full bg-[#FDF9F6] border border-[#003943]/20 rounded-xl px-4 py-3 pr-12 text-sm font-mono font-bold text-[#003943] focus:outline-none focus:border-[#00959C] focus:ring-2 focus:ring-[#00959C]/20 transition-all"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowLoginPassword(!showLoginPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-[#003943]/60 hover:text-[#003943] focus:outline-none p-1 rounded-md"
+                  aria-label={showLoginPassword ? "Hide password" : "Show password"}
+                >
+                  {showLoginPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+                </button>
+              </div>
             </div>
 
             <button

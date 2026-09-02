@@ -99,11 +99,17 @@ export const mockApiService = {
       officers (
         *,
         profiles (*)
-      )
+      ),
+      verification_results (*)
     `);
     if (error) throw error;
 
-    return data.map(app => ({
+    return data.map(app => {
+      const verification = app.verification_results && app.verification_results.length > 0
+        ? app.verification_results.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))[0]
+        : null;
+
+      return {
       id: app.id,
       applicationNumber: app.application_number,
       instrumentId: app.instrument_id,
@@ -122,6 +128,16 @@ export const mockApiService = {
       documents: app.documents,
       notes: app.notes,
       timeline: [], // Will need app_timeline fetch if required, keeping empty array for now to prevent crashes
+      
+      verification: verification ? {
+        outcome: verification.outcome,
+        officerRemarks: verification.officer_remarks,
+        rejectionReason: verification.rejection_reason,
+        checklistResults: verification.checklist_results,
+        technicalTestResults: verification.technical_test_results,
+        photoEvidenceUrls: verification.photo_evidence_urls,
+        createdAt: verification.created_at
+      } : null,
       
       // Full Nested Objects for Case Reference
       instrument: app.instruments ? {
@@ -151,8 +167,9 @@ export const mockApiService = {
         phone: app.profiles.phone,
         address: app.profiles.address
       } : null
-    }));
-  },
+    };
+  });
+},
 
   async getApplicationById(store, id) {
     // For now we can rely on Context holding the list or we can fetch single

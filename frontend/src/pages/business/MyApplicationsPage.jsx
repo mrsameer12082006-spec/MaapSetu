@@ -169,6 +169,37 @@ export const MyApplicationsPage = () => {
               )}
             </div>
 
+            {/* Verification Result Section */}
+            {selectedApp.verification && (
+              <div className={`p-4 rounded-xl border text-xs space-y-3 ${
+                selectedApp.verification.outcome === 'PASS' 
+                  ? 'bg-emerald-50 border-emerald-200' 
+                  : 'bg-red-50 border-red-200'
+              }`}>
+                <p className={`font-bold uppercase tracking-wider ${
+                  selectedApp.verification.outcome === 'PASS' ? 'text-emerald-900' : 'text-red-900'
+                }`}>
+                  {selectedApp.verification.outcome === 'PASS' ? 'VERIFICATION PASSED' : 'VERIFICATION FAILED'}
+                </p>
+
+                {selectedApp.verification.outcome === 'FAIL' && (
+                  <div>
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase">Reason for Failure</span>
+                    <span className="font-semibold text-neutral-900">
+                      {selectedApp.verification.rejectionReason || 'Not specified'}
+                    </span>
+                  </div>
+                )}
+
+                <div>
+                  <span className="block text-[10px] font-bold text-neutral-500 uppercase">Officer Remarks</span>
+                  <span className="font-semibold text-neutral-900">
+                    {selectedApp.verification.officerRemarks || 'No remarks provided.'}
+                  </span>
+                </div>
+              </div>
+            )}
+
             {/* Timeline */}
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-neutral-300 pb-1 mb-3">

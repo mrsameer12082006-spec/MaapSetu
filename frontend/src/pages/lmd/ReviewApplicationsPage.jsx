@@ -415,6 +415,61 @@ export const ReviewApplicationsPage = () => {
               </div>
             )}
 
+            {/* Officer Verification Result Section */}
+            {selectedApp.verification && (
+              <div className={`p-4 rounded-2xl border text-xs space-y-3 ${
+                selectedApp.verification.outcome === 'PASS' 
+                  ? 'bg-emerald-50 border-emerald-200' 
+                  : 'bg-red-50 border-red-200'
+              }`}>
+                <p className={`font-bold uppercase tracking-wider ${
+                  selectedApp.verification.outcome === 'PASS' ? 'text-emerald-900' : 'text-red-900'
+                }`}>
+                  OFFICER VERIFICATION RESULT
+                </p>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase">Outcome</span>
+                    <span className={`font-extrabold ${
+                      selectedApp.verification.outcome === 'PASS' ? 'text-emerald-700' : 'text-red-700'
+                    }`}>
+                      {selectedApp.verification.outcome}
+                    </span>
+                  </div>
+                  <div>
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase">Reason for Failure</span>
+                    <span className="font-semibold text-neutral-900">
+                      {selectedApp.verification.outcome === 'FAIL' 
+                        ? (selectedApp.verification.rejectionReason || 'Not specified')
+                        : 'Not applicable'}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="block text-[10px] font-bold text-neutral-500 uppercase">Officer Remarks</span>
+                  <span className="font-semibold text-neutral-900">
+                    {selectedApp.verification.officerRemarks || 'No remarks provided.'}
+                  </span>
+                </div>
+
+                {selectedApp.verification.technicalTestResults && Object.keys(selectedApp.verification.technicalTestResults).length > 0 && (
+                  <div className="pt-2 border-t border-black/10 mt-2">
+                    <span className="block text-[10px] font-bold text-neutral-500 uppercase mb-1">Technical Summary</span>
+                    <ul className="space-y-1">
+                      {Object.entries(selectedApp.verification.technicalTestResults).map(([key, val]) => (
+                        <li key={key} className="flex justify-between font-medium text-neutral-800">
+                          <span className="capitalize">{key.replace(/([A-Z])/g, ' $1').trim()}:</span>
+                          <span>{val}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            )}
+
             {selectedApp.notes && (
               <div className="p-3 bg-neutral-100 rounded border border-neutral-300 text-xs">
                 <p className="font-semibold text-neutral-900">Applicant Notes:</p>
