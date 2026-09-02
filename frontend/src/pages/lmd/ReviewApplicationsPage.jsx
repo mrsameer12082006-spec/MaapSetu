@@ -39,9 +39,14 @@ export const ReviewApplicationsPage = () => {
   );
 
   const handleGenerateCert = async (appId) => {
-    const cert = await generateCertificate(appId);
-    if (cert) {
-      alert(`Legal Metrology Certificate ${cert.id} successfully generated & issued!`);
+    try {
+      const cert = await generateCertificate(appId);
+      if (cert) {
+        alert(`Legal Metrology Certificate ${cert.id} successfully generated & issued!`);
+      }
+    } catch (err) {
+      alert(`Failed to generate certificate: ${err.message}`);
+      console.error(err);
     }
   };
 

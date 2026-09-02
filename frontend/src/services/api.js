@@ -108,7 +108,7 @@ export const mockApiService = {
       applicationNumber: app.application_number,
       instrumentId: app.instrument_id,
       instrumentName: app.instruments ? app.instruments.instrument_name : 'Unknown Instrument',
-      applicantName: app.profiles ? app.profiles.name : (app.instruments ? app.instruments.premises_name : 'Unknown Applicant'),
+      applicantName: app.profiles ? app.profiles.name : 'Unknown Applicant',
       applicantId: app.applicant_id,
       applicationType: app.application_type,
       submissionDate: app.submitted_at,
@@ -231,7 +231,7 @@ export const mockApiService = {
       body: { applicationId: appId }
     });
     if (error) throw error;
-    return data;
+    return data?.certificate;
   },
 
   async getCertificates() {

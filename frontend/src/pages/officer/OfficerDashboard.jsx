@@ -72,26 +72,32 @@ export const OfficerDashboard = () => {
     if (!activeApp) return;
     setSubmitting(true);
 
-    await submitVerificationResult({
-      applicationId: activeApp.id,
-      outcome: outcome,
-      checklist_results: checklist,
-      technical_test_results: technicalResults,
-      officer_remarks: remarks,
-      rejection_reason: outcome === 'FAIL' ? failReason : null,
-      photo_evidence_urls: [
-        'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
-        'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
-      ]
-    });
+    try {
+      await submitVerificationResult({
+        applicationId: activeApp.id,
+        outcome: outcome,
+        checklist_results: checklist,
+        technical_test_results: technicalResults,
+        officer_remarks: remarks,
+        rejection_reason: outcome === 'FAIL' ? failReason : null,
+        photo_evidence_urls: [
+          'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=500&q=80',
+          'https://images.unsplash.com/photo-1581092335397-9583fe92d232?w=500&q=80'
+        ]
+      });
 
-    setSubmitting(false);
-    setSubmitSuccess(true);
+      setSubmitting(false);
+      setSubmitSuccess(true);
 
-    setTimeout(() => {
-      setSubmitSuccess(false);
-      setActiveApp(null);
-    }, 1500);
+      setTimeout(() => {
+        setSubmitSuccess(false);
+        setActiveApp(null);
+      }, 1500);
+    } catch (err) {
+      setSubmitting(false);
+      alert(`Failed to submit verification: ${err.message}`);
+      console.error(err);
+    }
   };
 
   return (

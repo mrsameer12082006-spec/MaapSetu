@@ -12,10 +12,20 @@ serve(async (req) => {
   }
 
   try {
+    const authHeader = req.headers.get('Authorization')
+    if (!authHeader) {
+      return new Response(JSON.stringify({ error: 'Missing Authorization header' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
+
+    const token = authHeader.replace('Bearer ', '')
+
     const supabaseClient = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_ANON_KEY') ?? '',
-      { global: { headers: { Authorization: req.headers.get('Authorization')! } } }
+      { global: { headers: { Authorization: authHeader } } }
     )
 
     const supabaseAdmin = createClient(
@@ -23,12 +33,18 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     )
 
-    // Check user role
+    // Check user role securely using explicit JWT
     const {
       data: { user },
-    } = await supabaseClient.auth.getUser()
+      error: authError
+    } = await supabaseClient.auth.getUser(token)
 
-    if (!user) throw new Error('Not authenticated')
+    if (authError || !user) {
+      return new Response(JSON.stringify({ error: 'Not authenticated' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 401,
+      })
+    }
 
     // Verify Officer role
     const { data: profile } = await supabaseClient.from('profiles').select('role').eq('id', user.id).single()
