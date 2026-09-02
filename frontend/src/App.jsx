@@ -34,8 +34,11 @@ import { CaseRecordPage } from './pages/officer/CaseRecordPage';
 const ProtectedRoute = ({ children, allowedRole }) => {
   const { currentRole, loading, session } = useAuth();
   const location = useLocation();
-  
-  if (loading || (session && !currentRole)) {
+
+  const cachedRole = currentRole || localStorage.getItem('maapsetu_role');
+  const hasToken = !!session || Object.keys(localStorage).some(k => k.startsWith('sb-') && k.endsWith('-auth-token'));
+
+  if (loading || (hasToken && !cachedRole)) {
     return (
       <div className="min-h-[60vh] flex items-center justify-center bg-[#FDF9F6]">
         <div className="flex flex-col items-center gap-3">
@@ -45,16 +48,18 @@ const ProtectedRoute = ({ children, allowedRole }) => {
       </div>
     );
   }
-  
-  if (!session || !currentRole) {
+
+  const effectiveRole = cachedRole;
+
+  if (!hasToken || !effectiveRole) {
     const redirectParam = location.pathname ? `?redirect=${encodeURIComponent(location.pathname + location.search)}` : '';
     return <Navigate to={`/login${redirectParam}`} replace />;
   }
-  
-  if (allowedRole && currentRole !== allowedRole) {
-    return <Navigate to={`/${currentRole}`} replace />;
+
+  if (allowedRole && effectiveRole !== allowedRole) {
+    return <Navigate to={`/${effectiveRole}`} replace />;
   }
-  
+
   return children;
 };
 

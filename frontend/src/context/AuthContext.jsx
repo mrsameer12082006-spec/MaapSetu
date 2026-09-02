@@ -10,7 +10,7 @@ export const USER_ROLES = {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [currentRole, setCurrentRole] = useState(null);
+  const [currentRole, setCurrentRole] = useState(() => localStorage.getItem('maapsetu_role') || null);
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);

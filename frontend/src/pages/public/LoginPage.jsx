@@ -16,11 +16,11 @@ export const LoginPage = () => {
   // Only fires on page mount / session restore — NOT after fresh login
   // (fresh login navigation is handled synchronously inside handleSubmit).
   useEffect(() => {
-    const redirectPath = searchParams.get('redirect');
-    if (redirectPath && user && currentRole) {
+    if (user && currentRole) {
       const homes = { business: '/business', lmd: '/lmd', officer: '/officer' };
       const home = homes[currentRole] || '/';
-      const dest = redirectPath.startsWith(`/${currentRole}`) ? redirectPath : home;
+      const redirectPath = searchParams.get('redirect');
+      const dest = (redirectPath && redirectPath.startsWith(`/${currentRole}`)) ? redirectPath : home;
       navigate(dest, { replace: true });
     }
   }, [user, currentRole, searchParams, navigate]);
