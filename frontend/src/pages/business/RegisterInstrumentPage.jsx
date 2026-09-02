@@ -1,18 +1,11 @@
 import React, { useState } from 'react';
-import { useNavigate, Link, useSearchParams } from 'react-router-dom';
+import { useNavigate, Link, } from 'react-router-dom';
 import {
-  Camera,
   FileText,
-  Sparkles,
-  CheckCircle2,
   CheckCircle,
   Upload,
   Trash2,
-  ArrowLeft,
-  UploadCloud,
-  ArrowRight,
   Info,
-  RotateCcw,
   Building2,
   ShieldCheck,
   Scale
@@ -21,19 +14,9 @@ import { useData } from '../../context/DataContext';
 
 export const RegisterInstrumentPage = () => {
   const navigate = useNavigate();
-  const [searchParams] = useSearchParams();
-  const initialMode = searchParams.get('mode'); // 'ocr' | 'manual' | null
-
-  const { registerInstrument, submitApplication, runOCR } = useData();
-
-  // Mode Selection: null (Choice Screen), 'ocr' (Upload Photo), 'manual' (Fill Form)
-  const [selectedMode, setSelectedMode] = useState(initialMode || null);
-
-  const [ocrLoading, setOcrLoading] = useState(false);
-  const [ocrResult, setOcrResult] = useState(null);
+  const { registerInstrument, submitApplication } = useData();
   const [submitLoading, setSubmitLoading] = useState(false);
-  const [previewImage, setPreviewImage] = useState(null);
-
+  
   // Verification Application State
   const [appType, setAppType] = useState('Initial Verification (New Instrument)');
   const [preferredDate, setPreferredDate] = useState('');
@@ -70,38 +53,7 @@ export const RegisterInstrumentPage = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // Simulate Photo Upload & OCR Extraction
-  const handleOcrExtract = async () => {
-    setOcrLoading(true);
-    setOcrResult(null);
-
-    const res = await runOCR(previewImage);
-
-    setOcrResult(res);
-    setFormData((prev) => ({
-      ...prev,
-      type: res.extractedData.type || 'Heavy Electronic Weighbridge',
-      manufacturer: res.extractedData.manufacturer || 'Avery India Ltd',
-      model: res.extractedData.model || 'WB-60T-PRO',
-      serialNumber: res.extractedData.serialNumber || 'AV-984210-IN',
-      maxCapacity: '60,000',
-      minCapacity: '100',
-      unitOfMeasurement: 'kg',
-      accuracyClass: 'Class III (Medium Commercial)',
-      scaleInterval: '10 g',
-      quantity: '1',
-      premisesName: 'Apex Logistics Warehouse Hub #4',
-      installationAddress: 'Plot 45, MIDC Industrial Area, Chakan, Pune, Maharashtra - 410501',
-      state: 'Maharashtra',
-      district: 'Pune',
-      verificationType: 'Initial Verification',
-      previousCertificateNo: '',
-      modelApprovalNo: 'IND/09/2021/442'
-    }));
-
-    setOcrLoading(false);
-  };
-
+  
   const handleAddFile = (e) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
@@ -165,175 +117,20 @@ export const RegisterInstrumentPage = () => {
 
   return (
     <div className="w-full max-w-4xl mx-auto space-y-7 pb-20 text-[#003943]">
-      {/* Change Method Button (Visible when mode selected) */}
-      {selectedMode && (
-        <div className="flex justify-end border-b border-[#003943]/10 pb-4">
-          <button
-            type="button"
-            onClick={() => {
-              setSelectedMode(null);
-              setOcrResult(null);
-            }}
-            className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#E0F5F6] text-[#003943] text-xs font-bold hover:bg-[#00959C] hover:text-white transition-colors"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Change Method</span>
-          </button>
+      <div className="space-y-8 animate-in fade-in duration-150">
+        <div className="space-y-1">
+          <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#00959C]">
+            INSTRUMENT REGISTRATION
+          </span>
+          <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#003943]">
+            Manual Instrument Registration
+          </h1>
+          <p className="text-xs sm:text-sm text-[#003943]/70 font-medium">
+            Fill out the mandatory Legal Metrology specifications in the form below.
+          </p>
         </div>
-      )}
 
-      {/* 1. SELECTION SCREEN (CHOICE BETWEEN OPTION 1 & OPTION 2) */}
-      {!selectedMode ? (
-        <div className="space-y-8 animate-in fade-in duration-200">
-          <div className="space-y-2 text-center max-w-xl mx-auto pt-2">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#00959C]">
-              INSTRUMENT REGISTRATION
-            </span>
-            <h1 className="text-3xl sm:text-4xl font-serif font-bold text-[#003943]">
-              How would you like to register?
-            </h1>
-            <p className="text-xs sm:text-sm text-[#003943]/70 font-medium">
-              Choose one of the two options below to add your weighing or measuring instrument.
-            </p>
-          </div>
-
-          {/* TWO OPTIONS GRID */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 pt-2">
-            {/* OPTION 1: Upload Photo (AI Form Fill) */}
-            <div
-              onClick={() => setSelectedMode('ocr')}
-              className="group bg-white rounded-3xl p-7 border-2 border-dashed border-[#003943]/20 hover:border-[#00959C] shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between space-y-6 relative overflow-hidden"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-14 h-14 rounded-2xl bg-[#003943] text-[#02B7BF] flex items-center justify-center shadow-md group-hover:scale-105 transition-transform">
-                    <Camera className="w-7 h-7 text-[#02B7BF]" />
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-[#E0F5F6] text-[#00959C] text-[10px] font-extrabold uppercase tracking-wider flex items-center gap-1">
-                    <Sparkles className="w-3 h-3" /> AI OCR
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-xl font-serif font-bold text-[#003943]">
-                    Upload photo of the plate
-                  </h3>
-                  <p className="text-xs text-[#003943]/70 leading-relaxed font-normal">
-                    Upload a photo of the nameplate — our AI will automatically read specifications & fill the form for you.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#003943]/10 flex items-center justify-between font-bold text-xs text-[#00959C] group-hover:text-[#003943]">
-                <span>Option 1: Upload Photo</span>
-                <div className="w-7 h-7 rounded-full bg-[#00959C] group-hover:bg-[#003943] text-white flex items-center justify-center transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-
-            {/* OPTION 2: Fill Form Manually */}
-            <div
-              onClick={() => setSelectedMode('manual')}
-              className="group bg-white rounded-3xl p-7 border-2 border-dashed border-[#003943]/20 hover:border-[#00959C] shadow-md hover:shadow-xl transition-all cursor-pointer flex flex-col justify-between space-y-6 relative overflow-hidden"
-            >
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div className="w-14 h-14 rounded-2xl bg-[#E0F5F6] text-[#003943] flex items-center justify-center shadow-xs group-hover:scale-105 transition-transform">
-                    <FileText className="w-7 h-7 text-[#00959C]" />
-                  </div>
-                  <span className="px-3 py-1 rounded-full bg-slate-100 text-slate-700 text-[10px] font-extrabold uppercase tracking-wider">
-                    Manual Entry
-                  </span>
-                </div>
-
-                <div className="space-y-2">
-                  <h3 className="text-xl font-serif font-bold text-[#003943]">
-                    Fill the form manually
-                  </h3>
-                  <p className="text-xs text-[#003943]/70 leading-relaxed font-normal">
-                    Enter instrument details such as manufacturer, serial number, capacity, and accuracy class manually into the form.
-                  </p>
-                </div>
-              </div>
-
-              <div className="pt-4 border-t border-[#003943]/10 flex items-center justify-between font-bold text-xs text-[#00959C] group-hover:text-[#003943]">
-                <span>Option 2: Fill Form</span>
-                <div className="w-7 h-7 rounded-full bg-[#00959C] group-hover:bg-[#003943] text-white flex items-center justify-center transition-colors">
-                  <ArrowRight className="w-4 h-4" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ) : (
-        /* 2. FORM / WORKFLOW PAGE WITH ALL 17 FIELDS */
-        <div className="space-y-8 animate-in fade-in duration-150">
-          <div className="space-y-1">
-            <span className="text-[11px] font-extrabold uppercase tracking-widest text-[#00959C]">
-              {selectedMode === 'ocr' ? 'OPTION 1: UPLOAD PHOTO & AI AUTOFILL' : 'OPTION 2: MANUAL FORM ENTRY'}
-            </span>
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-[#003943]">
-              {selectedMode === 'ocr' ? 'Upload Nameplate Photo' : 'Instrument Registration Form'}
-            </h1>
-            <p className="text-xs sm:text-sm text-[#003943]/70 font-medium">
-              {selectedMode === 'ocr'
-                ? 'Upload your nameplate photo to let AI extract specifications, then review & submit.'
-                : 'Fill out the mandatory Legal Metrology specifications in the form below.'}
-            </p>
-          </div>
-
-          {/* AI OCR PHOTO UPLOADER BOX (VISIBLE IN OPTION 1) */}
-          {selectedMode === 'ocr' && (
-            <div className="bg-white rounded-3xl p-6 sm:p-7 border border-[#003943]/15 shadow-md space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-[#003943] text-[#02B7BF] flex items-center justify-center shrink-0">
-                  <Camera className="w-6 h-6 text-[#02B7BF]" />
-                </div>
-                <div>
-                  <h3 className="font-serif font-bold text-[#003943] text-base sm:text-lg">
-                    AI Nameplate OCR Photo Scanner
-                  </h3>
-                  <p className="text-xs text-[#003943]/70">
-                    Upload identification plate photo. System reads Manufacturer, Model, Serial No & Capacity automatically.
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-4 pt-2">
-                <div className="flex-1 w-full border-2 border-dashed border-[#00959C]/30 hover:border-[#00959C] rounded-2xl p-5 bg-[#FDF9F6] text-center cursor-pointer transition-colors">
-                  <UploadCloud className="w-8 h-8 text-[#00959C] mx-auto mb-1.5" />
-                  <p className="text-xs font-bold text-[#003943]">Click to Select Nameplate Photo</p>
-                  <p className="text-[11px] text-[#003943]/60">Supports JPG, PNG up to 10MB</p>
-                </div>
-
-                <button
-                  type="button"
-                  disabled={ocrLoading}
-                  onClick={handleOcrExtract}
-                  className="w-full sm:w-auto px-6 py-4 rounded-full bg-[#003943] hover:bg-[#002B33] text-white font-bold text-xs sm:text-sm transition-all shadow-md flex items-center justify-center gap-2 shrink-0 disabled:opacity-50"
-                >
-                  <Sparkles className="w-4 h-4 text-[#02B7BF]" />
-                  <span>{ocrLoading ? 'Scanning Photo...' : 'Extract Details via AI OCR'}</span>
-                </button>
-              </div>
-
-              {ocrResult && (
-                <div className="p-4 bg-[#E0F5F6] rounded-2xl border border-[#00959C]/40 text-xs text-[#003943] space-y-1 animate-in fade-in">
-                  <div className="flex items-center gap-2 font-bold text-[#00959C]">
-                    <CheckCircle2 className="w-4 h-4" />
-                    <span>Details Extracted Successfully! (AI OCR Confidence 96%)</span>
-                  </div>
-                  <p className="text-[11px] text-[#003943]/80">
-                    Form fields below have been pre-filled automatically with OCR data. Please review before saving.
-                  </p>
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* MAIN 17-FIELD REGISTRATION FORM */}
-          <form onSubmit={handleSubmit} className="space-y-7">
+        <form onSubmit={handleSubmit} className="space-y-7">
             {/* SECTION 1: INSTRUMENT & TECHNICAL SPECIFICATIONS */}
             <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#003943]/15 shadow-md space-y-6">
               <div className="pb-3 border-b border-[#003943]/10 flex items-center gap-2.5">
@@ -812,8 +609,9 @@ export const RegisterInstrumentPage = () => {
               </div>
             </div>
           </form>
-        </div>
-      )}
+      </div>
     </div>
   );
 };
+
+

@@ -142,11 +142,11 @@ The verification officer/test centre can:
 
 MaapSetu is designed to use AI where it provides practical value rather than adding AI unnecessarily.
 
-### OCR-Based Instrument Registration
 
-Users can upload a photograph of an instrument's identification/nameplate.
 
-The OCR module can extract information such as:
+
+
+
 
 ```text
 Manufacturer
@@ -160,7 +160,7 @@ Example:
 ```text
 Image
   ↓
-OCR
+
   ↓
 Extracted Information
   ↓
@@ -313,7 +313,7 @@ Potential security measures include:
               │                │                │
               ▼                ▼                ▼
         ┌──────────┐     ┌───────────┐    ┌──────────┐
-        │ Database │     │ AI / OCR  │    │ Storage  │
+
         │          │     │  Module   │    │          │
         └──────────┘     └───────────┘    └──────────┘
 ```
@@ -371,7 +371,7 @@ Analytics
 
 AI
 │
-├── OCR
+
 ├── Data Extraction
 └── Future Intelligent Assistance
 ```
@@ -411,10 +411,6 @@ AI
 
 * PostgreSQL / MySQL or selected database
 
-### AI
-
-* OCR-based text extraction
-* Computer Vision / AI modules where applicable
 
 ### Other
 
@@ -443,7 +439,7 @@ Focus on the complete core workflow:
 * [ ] QR verification
 * [ ] Expiry tracking
 * [ ] Basic dashboard
-* [ ] OCR prototype
+
 
 ---
 
@@ -451,7 +447,7 @@ Focus on the complete core workflow:
 
 After the internal round, the platform can be enhanced with:
 
-* [ ] Advanced AI/OCR
+
 * [ ] Instrument digital identity
 * [ ] Offline-first field verification
 * [ ] Advanced evidence integrity
@@ -548,3 +544,5 @@ This creates greater transparency, easier compliance, better record management a
 ## ⭐ Team Delmora
 
 > **Digitizing trust in every measurement.**
+
+

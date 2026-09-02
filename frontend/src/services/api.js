@@ -1,25 +1,6 @@
 import { supabase } from './supabase';
 
 export const mockApiService = {
-  // --- OCR / AI Extractor Service ---
-  async extractInstrumentPlateData(file) {
-    // Keeping mock OCR for now as OCR is optional for core workflow
-    return {
-      success: true,
-      extractedData: {
-        type: 'Heavy Electronic Weighbridge',
-        manufacturer: 'Avery India Ltd',
-        model: 'WB-60T-PRO',
-        serialNumber: 'AV-984210-IN',
-        capacity: '60000',
-        accuracyClass: 'Class III',
-        extractedAt: new Date().toISOString()
-      },
-      confidence: 96,
-      ocrNote: 'OCR scan completed with 96% overall confidence.'
-    };
-  },
-
   // --- Instrument Services ---
   async getInstruments() {
     const { data, error } = await supabase.from('instruments').select('*');
@@ -333,3 +314,4 @@ export const mockApiService = {
     }));
   }
 };
+

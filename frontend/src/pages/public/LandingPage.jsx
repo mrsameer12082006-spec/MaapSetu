@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   Building2,
@@ -13,15 +13,15 @@ import {
   Scale,
   FileCheck2,
   QrCode,
-  Sparkles
-} from 'lucide-react';
-import { Card } from '../../components/common/Card';
-import { Button } from '../../components/common/Button';
-import { Badge } from '../../components/common/Badge';
+  Sparkles,
+} from "lucide-react";
+import { Card } from "../../components/common/Card";
+import { Button } from "../../components/common/Button";
+import { Badge } from "../../components/common/Badge";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
-  const [searchId, setSearchId] = useState('');
+  const [searchId, setSearchId] = useState("");
   const [activeFaq, setActiveFaq] = useState(null);
 
   const handleSearchSubmit = (e) => {
@@ -33,29 +33,25 @@ export const LandingPage = () => {
 
   const faqs = [
     {
-      q: 'Which weighing and measuring instruments require mandatory verification under Legal Metrology?',
-      a: 'Under the Legal Metrology Act, 2009, all weighing and measuring instruments used in commercial trade, transaction, human health, or industrial production protection (e.g., commercial scales, heavy weighbridges, fuel dispensing pumps, liquid flow meters, storage tank gauges) must undergo mandatory initial verification and periodic re-verification.'
+      q: "Which weighing and measuring instruments require mandatory verification under Legal Metrology?",
+      a: "Under the Legal Metrology Act, 2009, all weighing and measuring instruments used in commercial trade, transaction, human health, or industrial production protection (e.g., commercial scales, heavy weighbridges, fuel dispensing pumps, liquid flow meters, storage tank gauges) must undergo mandatory initial verification and periodic re-verification.",
     },
     {
-      q: 'What is the standard validity period of a Legal Metrology Verification Certificate?',
-      a: 'Standard verification certificates are valid for 12 months (1 year) for commercial scales, petrol pumps, and weighbridges. High-precision or specialized measures may have custom re-verification intervals set by the State Legal Metrology Controller.'
+      q: "What is the standard validity period of a Legal Metrology Verification Certificate?",
+      a: "Standard verification certificates are valid for 12 months (1 year) for commercial scales, petrol pumps, and weighbridges. High-precision or specialized measures may have custom re-verification intervals set by the State Legal Metrology Controller.",
     },
     {
-      q: 'What is the difference between an LMO Inspector and a Government Approved Test Centre (GATC)?',
-      a: 'A Legal Metrology Officer (LMO) is a government inspector authorized directly under the Legal Metrology Department. A Government Approved Test Centre (GATC) is an accredited private/public technical body authorized to perform physical testing and calibration verification on specified classes of instruments under government supervision.'
+      q: "What is the difference between an LMO Inspector and a Government Approved Test Centre (GATC)?",
+      a: "A Legal Metrology Officer (LMO) is a government inspector authorized directly under the Legal Metrology Department. A Government Approved Test Centre (GATC) is an accredited private/public technical body authorized to perform physical testing and calibration verification on specified classes of instruments under government supervision.",
     },
     {
-      q: 'How does AI OCR assist in registering an instrument on MaapSetu?',
-      a: 'When an instrument owner uploads a photo of an instrument identification plate, MaapSetu uses optical character recognition (OCR) to automatically extract manufacturer, model, serial number, capacity, and accuracy class. The user can review, edit, and confirm these extracted values in real time before saving.'
+      q: "What are the penalties for operating an instrument with an expired verification seal?",
+      a: "Operating unverified or expired weighing instruments is a punishable offense under Section 24 & Section 33 of the Legal Metrology Act, 2009, incurring mandatory seizure of the instrument and financial penalties up to ₹25,000 per violation.",
     },
     {
-      q: 'What are the penalties for operating an instrument with an expired verification seal?',
-      a: 'Operating unverified or expired weighing instruments is a punishable offense under Section 24 & Section 33 of the Legal Metrology Act, 2009, incurring mandatory seizure of the instrument and financial penalties up to ₹25,000 per violation.'
+      q: "How can the public or inspectors verify a digital certificate?",
+      a: "Every digital certificate issued on MaapSetu features a unique QR code and Certificate ID. Anyone can scan the QR code using any smartphone or enter the Certificate ID on the public verification portal to inspect real-time certificate validity.",
     },
-    {
-      q: 'How can the public or inspectors verify a digital certificate?',
-      a: 'Every digital certificate issued on MaapSetu features a unique QR code and Certificate ID. Anyone can scan the QR code using any smartphone or enter the Certificate ID on the public verification portal to inspect real-time certificate validity.'
-    }
   ];
 
   return (
@@ -65,16 +61,21 @@ export const LandingPage = () => {
         <div className="max-w-3xl space-y-6">
           <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-primary-light text-primary text-xs font-semibold">
             <ShieldCheck className="w-4 h-4 text-primary" />
-            <span>Ministry of Consumer Affairs • Smart India Hackathon 2026</span>
+            <span>
+              Ministry of Consumer Affairs • Smart India Hackathon 2026
+            </span>
           </div>
 
           <h1 className="text-3xl sm:text-4xl font-bold text-neutral-900 leading-tight">
-            Digital Verification & Certification Platform for Weighing and Measuring Instruments
+            Digital Verification & Certification Platform for Weighing and
+            Measuring Instruments
           </h1>
 
           <p className="text-base text-neutral-600 leading-relaxed">
-            MaapSetu streamlines the end-to-end verification lifecycle under India's Legal Metrology Act, 2009.
-            Connect instrument owners, LMD administrators, and verification officers seamlessly with digital applications, AI-assisted OCR registration, and cryptographically verifiable QR certificates.
+            MaapSetu streamlines the end-to-end verification lifecycle under
+            India's Legal Metrology Act, 2009. Connect instrument owners, LMD
+            administrators, and verification officers seamlessly with digital
+            applications, and cryptographically verifiable QR certificates.
           </p>
 
           <div className="flex flex-wrap items-center gap-4 pt-2">
@@ -94,7 +95,10 @@ export const LandingPage = () => {
         {/* Quick Certificate Search Bar Widget */}
         <div className="mt-8 pt-6 border-t border-neutral-300">
           <Card className="bg-neutral-100/80 border-neutral-300">
-            <form onSubmit={handleSearchSubmit} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+            <form
+              onSubmit={handleSearchSubmit}
+              className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3"
+            >
               <div className="flex-1 relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-neutral-600">
                   <Search className="w-5 h-5" />
@@ -112,7 +116,23 @@ export const LandingPage = () => {
               </Button>
             </form>
             <p className="text-xs text-neutral-600 mt-2">
-              Try demo IDs: <button type="button" onClick={() => setSearchId('CERT-2026-8891')} className="text-primary font-mono hover:underline">CERT-2026-8891</button> (Valid Weighbridge) or <button type="button" onClick={() => setSearchId('CERT-2025-3310')} className="text-danger font-mono hover:underline">CERT-2025-3310</button> (Expired Fuel Pump).
+              Try demo IDs:{" "}
+              <button
+                type="button"
+                onClick={() => setSearchId("CERT-2026-8891")}
+                className="text-primary font-mono hover:underline"
+              >
+                CERT-2026-8891
+              </button>{" "}
+              (Valid Weighbridge) or{" "}
+              <button
+                type="button"
+                onClick={() => setSearchId("CERT-2025-3310")}
+                className="text-danger font-mono hover:underline"
+              >
+                CERT-2025-3310
+              </button>{" "}
+              (Expired Fuel Pump).
             </p>
           </Card>
         </div>
@@ -121,8 +141,13 @@ export const LandingPage = () => {
       {/* Three User Roles Section */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900">Platform Ecosystem & Roles</h2>
-          <p className="text-sm text-neutral-600">Unified workflow serving all stakeholders in Legal Metrology verification.</p>
+          <h2 className="text-2xl font-bold text-neutral-900">
+            Platform Ecosystem & Roles
+          </h2>
+          <p className="text-sm text-neutral-600">
+            Unified workflow serving all stakeholders in Legal Metrology
+            verification.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -132,19 +157,27 @@ export const LandingPage = () => {
               <div className="w-12 h-12 rounded-lg bg-primary-light text-primary flex items-center justify-center">
                 <Building2 className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900">Instrument Owner / Business</h3>
+              <h3 className="text-lg font-semibold text-neutral-900">
+                Instrument Owner / Business
+              </h3>
               <ul className="space-y-2 text-sm text-neutral-600">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Register instruments with AI OCR plate photo scanner</span>
+                  <span>
+                    Register instruments manually via a simple digital process
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Submit verification & re-verification applications</span>
+                  <span>
+                    Submit verification & re-verification applications
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Track inspection status and download digital certificates</span>
+                  <span>
+                    Track inspection status and download digital certificates
+                  </span>
                 </li>
               </ul>
             </div>
@@ -163,7 +196,9 @@ export const LandingPage = () => {
               <div className="w-12 h-12 rounded-lg bg-primary-light text-primary flex items-center justify-center">
                 <ShieldCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900">LMD Administrator</h3>
+              <h3 className="text-lg font-semibold text-neutral-900">
+                LMD Administrator
+              </h3>
               <ul className="space-y-2 text-sm text-neutral-600">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -175,7 +210,9 @@ export const LandingPage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Monitor pendency, compliance, and expiring certificates</span>
+                  <span>
+                    Monitor pendency, compliance, and expiring certificates
+                  </span>
                 </li>
               </ul>
             </div>
@@ -194,7 +231,9 @@ export const LandingPage = () => {
               <div className="w-12 h-12 rounded-lg bg-primary-light text-primary flex items-center justify-center">
                 <UserCheck className="w-6 h-6" />
               </div>
-              <h3 className="text-lg font-semibold text-neutral-900">LMO / GATC Officer</h3>
+              <h3 className="text-lg font-semibold text-neutral-900">
+                LMO / GATC Officer
+              </h3>
               <ul className="space-y-2 text-sm text-neutral-600">
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
@@ -202,11 +241,15 @@ export const LandingPage = () => {
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Record physical observations, seals & MPE error checks</span>
+                  <span>
+                    Record physical observations, seals & MPE error checks
+                  </span>
                 </li>
                 <li className="flex items-start gap-2">
                   <CheckCircle2 className="w-4 h-4 text-accent shrink-0 mt-0.5" />
-                  <span>Submit PASS/FAIL decisions and issue digital certificates</span>
+                  <span>
+                    Submit PASS/FAIL decisions and issue digital certificates
+                  </span>
                 </li>
               </ul>
             </div>
@@ -225,39 +268,60 @@ export const LandingPage = () => {
       <section className="bg-white border border-neutral-300 rounded-card p-8 space-y-6">
         <div>
           <h2 className="text-2xl font-bold text-neutral-900">How It Works</h2>
-          <p className="text-sm text-neutral-600">End-to-end 4-step digital verification workflow.</p>
+          <p className="text-sm text-neutral-600">
+            End-to-end 4-step digital verification workflow.
+          </p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           <div className="space-y-2 relative">
-            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">1</div>
-            <h4 className="font-semibold text-neutral-900 text-base">Register Instrument</h4>
+            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">
+              1
+            </div>
+            <h4 className="font-semibold text-neutral-900 text-base">
+              Register Instrument
+            </h4>
             <p className="text-xs text-neutral-600">
-              Upload identification plate photo. OCR automatically extracts serial numbers, capacity, and accuracy class.
+              Enter your instrument details securely through our digital forms.
             </p>
           </div>
 
           <div className="space-y-2 relative">
-            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">2</div>
-            <h4 className="font-semibold text-neutral-900 text-base">Apply for Verification</h4>
+            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">
+              2
+            </div>
+            <h4 className="font-semibold text-neutral-900 text-base">
+              Apply for Verification
+            </h4>
             <p className="text-xs text-neutral-600">
-              Select verification type, upload calibration certificates, and request inspection slot.
+              Select verification type, upload calibration certificates, and
+              request inspection slot.
             </p>
           </div>
 
           <div className="space-y-2 relative">
-            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">3</div>
-            <h4 className="font-semibold text-neutral-900 text-base">Field Inspection</h4>
+            <div className="w-8 h-8 rounded-full bg-primary text-white font-bold flex items-center justify-center text-sm">
+              3
+            </div>
+            <h4 className="font-semibold text-neutral-900 text-base">
+              Field Inspection
+            </h4>
             <p className="text-xs text-neutral-600">
-              LMD officer or GATC center conducts physical testing, checks MPE error bounds, and attaches lead seals.
+              LMD officer or GATC center conducts physical testing, checks MPE
+              error bounds, and attaches lead seals.
             </p>
           </div>
 
           <div className="space-y-2 relative">
-            <div className="w-8 h-8 rounded-full bg-accent text-white font-bold flex items-center justify-center text-sm">4</div>
-            <h4 className="font-semibold text-neutral-900 text-base">Digital Certification</h4>
+            <div className="w-8 h-8 rounded-full bg-accent text-white font-bold flex items-center justify-center text-sm">
+              4
+            </div>
+            <h4 className="font-semibold text-neutral-900 text-base">
+              Digital Certification
+            </h4>
             <p className="text-xs text-neutral-600">
-              Upon PASS result, a tamper-proof digital certificate with QR code is generated instantly.
+              Upon PASS result, a tamper-proof digital certificate with QR code
+              is generated instantly.
             </p>
           </div>
         </div>
@@ -266,21 +330,33 @@ export const LandingPage = () => {
       {/* FAQ Accordion */}
       <section className="space-y-4">
         <div>
-          <h2 className="text-2xl font-bold text-neutral-900">Frequently Asked Questions</h2>
-          <p className="text-sm text-neutral-600">Common questions about Legal Metrology rules, verification cycles, and certificates.</p>
+          <h2 className="text-2xl font-bold text-neutral-900">
+            Frequently Asked Questions
+          </h2>
+          <p className="text-sm text-neutral-600">
+            Common questions about Legal Metrology rules, verification cycles,
+            and certificates.
+          </p>
         </div>
 
         <div className="space-y-3">
           {faqs.map((faq, idx) => {
             const isOpen = activeFaq === idx;
             return (
-              <div key={idx} className="bg-white border border-neutral-300 rounded-card overflow-hidden transition-colors">
+              <div
+                key={idx}
+                className="bg-white border border-neutral-300 rounded-card overflow-hidden transition-colors"
+              >
                 <button
                   onClick={() => setActiveFaq(isOpen ? null : idx)}
                   className="w-full px-6 py-4 text-left flex items-center justify-between gap-4 font-semibold text-neutral-900 text-sm hover:bg-neutral-100/50"
                 >
                   <span>{faq.q}</span>
-                  {isOpen ? <ChevronUp className="w-4 h-4 text-neutral-600 shrink-0" /> : <ChevronDown className="w-4 h-4 text-neutral-600 shrink-0" />}
+                  {isOpen ? (
+                    <ChevronUp className="w-4 h-4 text-neutral-600 shrink-0" />
+                  ) : (
+                    <ChevronDown className="w-4 h-4 text-neutral-600 shrink-0" />
+                  )}
                 </button>
                 {isOpen && (
                   <div className="px-6 pb-4 pt-1 text-xs text-neutral-600 leading-relaxed border-t border-neutral-200">
