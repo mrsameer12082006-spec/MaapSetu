@@ -26,7 +26,7 @@ const STATUS_TABS = [
 export const ReviewApplicationsPage = () => {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
-  const { applications, officers, assignOfficer, submitVerificationResult, generateCertificate } = useData();
+  const { applications, certificates, officers, assignOfficer, submitVerificationResult, generateCertificate } = useData();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedApp, setSelectedApp] = useState(null);
@@ -173,14 +173,26 @@ export const ReviewApplicationsPage = () => {
             </Button>
 
             {isPassed ? (
-              <Button
-                variant="accent"
-                size="sm"
-                icon={Award}
-                onClick={() => handleGenerateCert(row.id)}
-              >
-                Generate Certificate
-              </Button>
+              row.certificateId || row.certificate || certificates?.some(c => c.applicationId === row.id) ? (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  icon={Award}
+                  className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 font-medium"
+                  onClick={() => setSelectedApp(row)}
+                >
+                  Certificate Issued
+                </Button>
+              ) : (
+                <Button
+                  variant="accent"
+                  size="sm"
+                  icon={Award}
+                  onClick={() => handleGenerateCert(row.id)}
+                >
+                  Generate Certificate
+                </Button>
+              )
             ) : (
               <Button
                 variant="secondary"
@@ -280,16 +292,39 @@ export const ReviewApplicationsPage = () => {
           footer={
             <div className="flex items-center gap-3">
               {selectedApp.status === 'passed' || selectedApp.status === 'inspection_passed' ? (
-                <Button
-                  variant="accent"
-                  icon={Award}
-                  onClick={() => {
-                    handleGenerateCert(selectedApp.id);
-                    setSelectedApp(null);
-                  }}
-                >
-                  Generate Certificate
-                </Button>
+                (() => {
+                  const cert = certificates?.find(c => c.applicationId === selectedApp.id) || selectedApp.certificate;
+                  if (cert) {
+                    return (
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-emerald-800 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-300 flex items-center gap-1.5">
+                          <Award className="w-3.5 h-3.5 text-emerald-600" />
+                          Certificate {cert.certificateNumber || cert.id} Issued
+                        </span>
+                        <Link to={`/verify/${cert.id}`} target="_blank">
+                          <Button variant="ghost" size="sm">
+                            Public Verify
+                          </Button>
+                        </Link>
+                        <Button variant="secondary" onClick={() => setSelectedApp(null)}>
+                          Close
+                        </Button>
+                      </div>
+                    );
+                  }
+                  return (
+                    <Button
+                      variant="accent"
+                      icon={Award}
+                      onClick={() => {
+                        handleGenerateCert(selectedApp.id);
+                        setSelectedApp(null);
+                      }}
+                    >
+                      Generate Certificate (Retry)
+                    </Button>
+                  );
+                })()
               ) : selectedApp.status === 'failed' ? (
                 <div className="flex items-center gap-2">
                   <span className="text-xs font-bold text-red-700 bg-red-50 px-3 py-1.5 rounded-full border border-red-200">

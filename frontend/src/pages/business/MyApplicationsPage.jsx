@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Search, Eye, Filter, Calendar, MapPin, FileText, CheckCircle2, Clock } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Search, Eye, Filter, Calendar, MapPin, FileText, CheckCircle2, Clock, Award, ExternalLink, Download, QrCode, ShieldCheck } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
 import { Card } from '../../components/common/Card';
@@ -7,13 +8,15 @@ import { Table } from '../../components/common/Table';
 import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
+import { CertificateView } from '../../components/common/CertificateView';
 
 export const MyApplicationsPage = () => {
-  const { applications } = useData();
+  const { applications, certificates } = useData();
   const { user } = useAuth();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedApp, setSelectedApp] = useState(null);
+  const [selectedCert, setSelectedCert] = useState(null);
 
   const myApplications = applications.filter(app => !user || app.applicantId === user.id);
   const sortedApps = [...myApplications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
@@ -75,16 +78,44 @@ export const MyApplicationsPage = () => {
     {
       header: 'Status',
       key: 'status',
-      render: (row) => <Badge status={row.status}>{row.status}</Badge>
+      render: (row) => {
+        const cert = certificates?.find(c => c.applicationId === row.id) || row.certificate;
+        return (
+          <div className="flex flex-col items-start gap-1">
+            <Badge status={row.status}>{row.status}</Badge>
+            {cert && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-300 px-1.5 py-0.5 rounded shadow-2xs">
+                <Award className="w-3 h-3 text-emerald-600" /> Cert Issued
+              </span>
+            )}
+          </div>
+        );
+      }
     },
     {
       header: 'Action',
       key: 'action',
-      render: (row) => (
-        <Button variant="ghost" size="sm" icon={Eye} onClick={() => setSelectedApp(row)}>
-          Details
-        </Button>
-      )
+      render: (row) => {
+        const cert = certificates?.find(c => c.applicationId === row.id) || row.certificate;
+        return (
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="sm" icon={Eye} onClick={() => setSelectedApp(row)}>
+              Details
+            </Button>
+            {cert && (
+              <Button
+                variant="outline"
+                size="sm"
+                icon={Award}
+                className="text-emerald-700 border-emerald-300 hover:bg-emerald-50 font-semibold"
+                onClick={() => setSelectedCert(cert)}
+              >
+                Certificate
+              </Button>
+            )}
+          </div>
+        );
+      }
     }
   ];
 
@@ -237,6 +268,108 @@ export const MyApplicationsPage = () => {
               </div>
             )}
 
+            {/* Official Digital Certificate Card */}
+            {(() => {
+              const selectedCertForApp = certificates?.find(c => c.applicationId === selectedApp.id) || selectedApp.certificate;
+              if (selectedCertForApp) {
+                return (
+                  <div className="p-4 bg-emerald-50/90 border border-emerald-300 rounded-xl space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-emerald-200 pb-2">
+                      <div className="flex items-center gap-2">
+                        <Award className="w-5 h-5 text-emerald-700" />
+                        <div>
+                          <p className="font-bold text-emerald-950 text-sm">Official Legal Metrology Certificate Issued</p>
+                          <p className="text-[11px] text-emerald-800">Generated automatically upon physical verification pass.</p>
+                        </div>
+                      </div>
+                      <span className="font-mono text-xs font-extrabold text-emerald-900 bg-white border border-emerald-300 px-3 py-1 rounded-md shadow-2xs self-start sm:self-auto">
+                        {selectedCertForApp.certificateNumber || selectedCertForApp.id}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs bg-white/80 p-3 rounded-lg border border-emerald-200">
+                      <div>
+                        <span className="block text-[10px] uppercase font-bold text-neutral-500">Issued On</span>
+                        <span className="font-semibold text-neutral-900">{selectedCertForApp.verificationDate || selectedCertForApp.issuedAt?.split('T')[0] || '—'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase font-bold text-neutral-500">Valid Until</span>
+                        <span className="font-bold text-emerald-700">{selectedCertForApp.expiryDate || '—'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase font-bold text-neutral-500">Seal Number</span>
+                        <span className="font-mono font-semibold text-neutral-900">{selectedCertForApp.sealNumber || '—'}</span>
+                      </div>
+                      <div>
+                        <span className="block text-[10px] uppercase font-bold text-neutral-500">Authorized Officer</span>
+                        <span className="font-medium text-neutral-900 truncate block">{selectedCertForApp.verificationOfficer || 'Assigned Officer'}</span>
+                      </div>
+                    </div>
+
+                    <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
+                      <div className="flex items-center gap-2">
+                        <Button
+                          variant="primary"
+                          size="sm"
+                          icon={Eye}
+                          onClick={() => setSelectedCert(selectedCertForApp)}
+                        >
+                          View / Print Certificate
+                        </Button>
+                        <Button
+                          variant="secondary"
+                          size="sm"
+                          icon={Download}
+                          onClick={() => alert(`Downloading official digital certificate PDF: ${selectedCertForApp.certificateNumber || selectedCertForApp.id}`)}
+                        >
+                          Download PDF
+                        </Button>
+                      </div>
+                      <Link to={`/verify/${selectedCertForApp.id}`} target="_blank">
+                        <Button variant="ghost" size="sm" icon={ExternalLink} className="text-emerald-800 hover:text-emerald-950">
+                          Public QR Verification
+                        </Button>
+                      </Link>
+                    </div>
+                  </div>
+                );
+              }
+
+              if (selectedApp.status === 'passed') {
+                const isInspection =
+                  selectedApp.applicationType?.toLowerCase().includes('in-service') ||
+                  selectedApp.applicationType?.toLowerCase().includes('in_service') ||
+                  selectedApp.applicationType?.toLowerCase().includes('surveillance') ||
+                  selectedApp.verification?.technicalTestResults?.verificationStage === 'IN_SERVICE_INSPECTION';
+
+                if (isInspection) {
+                  return (
+                    <div className="p-3.5 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center gap-2.5 text-xs text-emerald-950">
+                      <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+                      <div>
+                        <p className="font-bold">In-Service Inspection Passed</p>
+                        <p className="text-emerald-800 text-[11px]">
+                          Official in-service surveillance inspection completed and verified compliant under Legal Metrology Act, 2009. (Verification certificates are not issued for surveillance inspections).
+                        </p>
+                      </div>
+                    </div>
+                  );
+                }
+
+                return (
+                  <div className="p-3.5 bg-blue-50 border border-blue-200 rounded-xl flex items-center gap-2.5 text-xs text-blue-900">
+                    <Clock className="w-4 h-4 text-blue-600 shrink-0" />
+                    <div>
+                      <p className="font-bold">Verification Passed</p>
+                      <p className="text-blue-700 text-[11px]">Official digital certificate is currently being finalized by the system.</p>
+                    </div>
+                  </div>
+                );
+              }
+
+              return null;
+            })()}
+
             {/* Timeline */}
             <div>
               <h4 className="text-xs font-semibold uppercase tracking-wider text-neutral-600 border-b border-neutral-300 pb-1 mb-3">
@@ -272,6 +405,30 @@ export const MyApplicationsPage = () => {
               </div>
             </div>
           </div>
+        </Modal>
+      )}
+
+      {/* Standalone Certificate Viewer Modal */}
+      {selectedCert && (
+        <Modal
+          maxWidth="max-w-4xl"
+          isOpen={!!selectedCert}
+          onClose={() => setSelectedCert(null)}
+          title={`Legal Metrology Verification Certificate: ${selectedCert.certificateNumber || selectedCert.id}`}
+          footer={
+            <div className="flex items-center justify-between w-full">
+              <Link to={`/verify/${selectedCert.id}`} target="_blank">
+                <Button variant="ghost" size="sm" icon={ExternalLink}>
+                  Public QR Verification
+                </Button>
+              </Link>
+              <Button variant="secondary" onClick={() => setSelectedCert(null)}>
+                Close Viewer
+              </Button>
+            </div>
+          }
+        >
+          <CertificateView certificate={selectedCert} />
         </Modal>
       )}
     </div>

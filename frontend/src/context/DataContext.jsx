@@ -32,8 +32,12 @@ export const DataProvider = ({ children }) => {
         mockApiService.getCertificates(),
         mockApiService.getOfficers()
       ]);
+      const appsWithCerts = apps.map(app => {
+        const cert = certs.find(c => c.applicationId === app.id);
+        return cert ? { ...app, certificate: cert, certificateId: cert.id } : app;
+      });
       setInstruments(insts);
-      setApplications(apps);
+      setApplications(appsWithCerts);
       setCertificates(certs);
       setOfficers(offs);
     } catch (error) {

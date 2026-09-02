@@ -171,7 +171,12 @@ export function getActionableLmdApplications(applications = []) {
     const isNew = category === STATUS_CATEGORIES.NEW;
     const isUnderReview = category === STATUS_CATEGORIES.IN_PROGRESS;
     const isAwaitingAssign = category === STATUS_CATEGORIES.AWAITING_ASSIGN;
-    const isPassedAwaitingCert = (status === 'passed' || status === 'completed') && !app.certificateId;
+    const isInspection =
+      String(app.applicationType || '').toLowerCase().includes('in-service') ||
+      String(app.applicationType || '').toLowerCase().includes('in_service') ||
+      String(app.applicationType || '').toLowerCase().includes('surveillance');
+
+    const isPassedAwaitingCert = (status === 'passed' || status === 'completed') && !app.certificateId && !isInspection;
 
     if (isNew || isUnderReview || isAwaitingAssign || isPassedAwaitingCert) {
       actionable.push(app);

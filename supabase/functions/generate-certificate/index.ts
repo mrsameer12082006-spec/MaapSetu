@@ -66,10 +66,25 @@ serve(async (req) => {
       throw new Error('Application must be in passed status to generate a certificate.')
     }
 
+    const appType = String(app.application_type || '').toLowerCase()
+    if (appType.includes('in-service') || appType.includes('in_service') || appType.includes('surveillance')) {
+      return new Response(JSON.stringify({ error: 'Cannot issue certificate for in-service surveillance inspection applications.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 400,
+      })
+    }
+
     // Check if certificate already exists
-    const { data: existingCert } = await supabaseAdmin.from('certificates').select('id').eq('application_id', applicationId).maybeSingle()
+    const { data: existingCert } = await supabaseAdmin.from('certificates').select('*').eq('application_id', applicationId).maybeSingle()
     if (existingCert) {
-      throw new Error('Certificate already exists for this application.')
+      return new Response(JSON.stringify({
+        success: true,
+        certificate: existingCert,
+        message: 'Certificate already exists for this application.'
+      }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 200,
+      })
     }
 
     const certNum = `CERT-2026-${Math.floor(1000 + Math.random() * 9000)}`
