@@ -18,9 +18,11 @@ import {
 import { Card } from "../../components/common/Card";
 import { Button } from "../../components/common/Button";
 import { Badge } from "../../components/common/Badge";
+import { useAuth, USER_ROLES } from "../../context/AuthContext";
 
 export const LandingPage = () => {
   const navigate = useNavigate();
+  const { currentRole } = useAuth();
   const [searchId, setSearchId] = useState("");
   const [activeFaq, setActiveFaq] = useState(null);
 
@@ -84,7 +86,7 @@ export const LandingPage = () => {
                 Register as a Business
               </Button>
             </Link>
-            <Link to="/login?role=lmd">
+            <Link to={currentRole === USER_ROLES.BUSINESS ? "/business/applications" : "/login?role=business&redirect=/business/applications"}>
               <Button variant="secondary" size="lg">
                 Track an Application
               </Button>

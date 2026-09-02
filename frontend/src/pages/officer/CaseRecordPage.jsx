@@ -23,7 +23,8 @@ import {
   Check,
   X,
   Maximize2,
-  Eye
+  Eye,
+  Scale
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Badge } from '../../components/common/Badge';

@@ -31,10 +31,12 @@ import {
   ExternalLink,
 } from "lucide-react";
 import { useData } from "../context/DataContext";
+import { useAuth, USER_ROLES } from "../context/AuthContext";
 
 export const ComplexLawHomePage = () => {
   const navigate = useNavigate();
   const { certificates } = useData();
+  const { currentRole } = useAuth();
 
   // Navigation & UI States
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -611,7 +613,7 @@ Central Registry Reference: ${doc.id}
             </Link>
 
             <Link
-              to="/login?role=lmd"
+              to={currentRole === USER_ROLES.BUSINESS ? "/business/applications" : "/login?role=business&redirect=/business/applications"}
               className="dashed-border-btn inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-white text-[#003943] font-bold text-base hover:border-[#00959C] hover:text-[#00959C] transition-all shadow-md"
             >
               <FileText className="w-5 h-5 text-[#003943]" />

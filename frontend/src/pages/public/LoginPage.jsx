@@ -8,8 +8,15 @@ export const LoginPage = () => {
   const [searchParams] = useSearchParams();
   const defaultRole = searchParams.get('role') || USER_ROLES.BUSINESS;
 
-  const { loginAsRole, registerUser } = useAuth();
+  const { loginAsRole, registerUser, user, currentRole } = useAuth();
   const [selectedRole, setSelectedRole] = useState(defaultRole);
+
+  React.useEffect(() => {
+    const redirectPath = searchParams.get('redirect');
+    if (user && currentRole === USER_ROLES.BUSINESS) {
+      navigate(redirectPath || '/business/applications', { replace: true });
+    }
+  }, [user, currentRole, searchParams, navigate]);
   const [username, setUsername] = useState('v.mehta@apexlogistics.in');
   const [password, setPassword] = useState('password123');
   const [loading, setLoading] = useState(false);
@@ -55,8 +62,9 @@ export const LoginPage = () => {
         });
         
         setSignUpSuccess(true);
+        const redirectPath = searchParams.get('redirect');
         setTimeout(() => {
-          navigate('/business');
+          navigate(redirectPath || '/business');
         }, 800);
       } catch (error) {
         setErrorMsg(error.message || 'Registration failed.');
@@ -67,9 +75,10 @@ export const LoginPage = () => {
       try {
         await loginAsRole(username, password);
         setLoginSuccess(true);
+        const redirectPath = searchParams.get('redirect');
         setTimeout(() => {
           if (selectedRole === USER_ROLES.BUSINESS) {
-            navigate('/business');
+            navigate(redirectPath || '/business');
           } else if (selectedRole === USER_ROLES.LMD_ADMIN) {
             navigate('/lmd');
           } else if (selectedRole === USER_ROLES.OFFICER) {

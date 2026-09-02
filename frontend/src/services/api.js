@@ -117,6 +117,8 @@ export const mockApiService = {
           applicantId: app.applicant_id,
           applicationType: app.application_type,
           submissionDate: app.submitted_at,
+          reviewedAt: app.reviewed_at,
+          completedAt: app.completed_at,
           preferredDate: app.preferred_date,
           status: app.status,
           assignedOfficerId: app.assigned_officer_id,

@@ -73,6 +73,7 @@ export function App() {
               <Route path="lmd" element={<ProtectedRoute allowedRole="lmd"><LmdDashboard /></ProtectedRoute>} />
               <Route path="lmd/dashboard" element={<ProtectedRoute allowedRole="lmd"><LmdDashboard /></ProtectedRoute>} />
               <Route path="lmd/review" element={<ProtectedRoute allowedRole="lmd"><ReviewApplicationsPage /></ProtectedRoute>} />
+              <Route path="lmd/review-applications" element={<Navigate to="/lmd/review" replace />} />
               <Route path="lmd/assign" element={<ProtectedRoute allowedRole="lmd"><AssignOfficerPage /></ProtectedRoute>} />
               <Route path="lmd/all" element={<ProtectedRoute allowedRole="lmd"><AllApplicationsPage /></ProtectedRoute>} />
               <Route path="lmd/applications" element={<ProtectedRoute allowedRole="lmd"><AllApplicationsPage /></ProtectedRoute>} />

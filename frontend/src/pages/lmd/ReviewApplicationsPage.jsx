@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { Search, FileCheck, UserCheck, Eye, Check, X, MapPin, FileText, AlertCircle, Award, CheckSquare, ShieldCheck, Building2 } from 'lucide-react';
+import React, { useState, useEffect, useMemo } from 'react';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { Search, FileCheck, UserCheck, Eye, Check, X, MapPin, FileText, AlertCircle, Award, CheckSquare, ShieldCheck, Building2, Filter } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Card } from '../../components/common/Card';
 import { Table } from '../../components/common/Table';
@@ -8,9 +8,24 @@ import { Badge } from '../../components/common/Badge';
 import { Modal } from '../../components/common/Modal';
 import { Button } from '../../components/common/Button';
 import { DynamicTechnicalVerification } from '../../components/verification/DynamicTechnicalVerification';
+import {
+  STATUS_CATEGORIES,
+  getApplicationStatusCategory,
+  calculateLmdDashboardCounts
+} from '../../utils/statusClassification';
+
+const STATUS_TABS = [
+  { key: 'all', label: 'All Applications' },
+  { key: 'new', label: 'New', category: STATUS_CATEGORIES.NEW },
+  { key: 'in_progress', label: 'In Progress', category: STATUS_CATEGORIES.IN_PROGRESS },
+  { key: 'awaiting_assignment', label: 'Awaiting Assign', category: STATUS_CATEGORIES.AWAITING_ASSIGN },
+  { key: 'verification', label: 'Verification', category: STATUS_CATEGORIES.VERIFICATION },
+  { key: 'completed', label: 'Completed', category: STATUS_CATEGORIES.COMPLETED }
+];
 
 export const ReviewApplicationsPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { applications, officers, assignOfficer, submitVerificationResult, generateCertificate } = useData();
 
   const [searchTerm, setSearchTerm] = useState('');
@@ -34,20 +49,50 @@ export const ReviewApplicationsPage = () => {
     }
   }, [officers, selectedOfficerId]);
 
-  const actionableStatuses = ['submitted', 'in_progress', 'assigned'];
-  const sortedApps = [...applications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
-  const pendingReviewApps = sortedApps.filter(app => actionableStatuses.includes(app.status)).filter((app) => {
-    const search = searchTerm.trim().toLowerCase();
-    if (!search) return true;
-    return (
-      app.id?.toLowerCase().includes(search) ||
-      app.applicationNumber?.toLowerCase().includes(search) ||
-      app.applicantName?.toLowerCase().includes(search) ||
-      app.instrumentName?.toLowerCase().includes(search) ||
-      app.applicationType?.toLowerCase().includes(search) ||
-      app.assignedOfficerName?.toLowerCase().includes(search)
-    );
-  });
+  const activeStatusFilter = (searchParams.get('status') || 'all').toLowerCase();
+
+  const tabCounts = useMemo(() => {
+    const counts = calculateLmdDashboardCounts(applications);
+    return {
+      all: applications.length,
+      new: counts[STATUS_CATEGORIES.NEW],
+      in_progress: counts[STATUS_CATEGORIES.IN_PROGRESS],
+      awaiting_assignment: counts[STATUS_CATEGORIES.AWAITING_ASSIGN],
+      verification: counts[STATUS_CATEGORIES.VERIFICATION],
+      completed: counts[STATUS_CATEGORIES.COMPLETED]
+    };
+  }, [applications]);
+
+  const sortedApps = useMemo(() => {
+    return [...applications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
+  }, [applications]);
+
+  const filteredApps = useMemo(() => {
+    return sortedApps.filter((app) => {
+      // 1. Tab / Status filter
+      if (activeStatusFilter !== 'all') {
+        const appCategory = getApplicationStatusCategory(app);
+        const matchingTab = STATUS_TABS.find(t => t.key === activeStatusFilter);
+        if (matchingTab && matchingTab.category) {
+          if (appCategory !== matchingTab.category) return false;
+        } else if (String(app.status).toLowerCase() !== activeStatusFilter) {
+          return false;
+        }
+      }
+
+      // 2. Search query filter
+      const search = searchTerm.trim().toLowerCase();
+      if (!search) return true;
+      return (
+        app.id?.toLowerCase().includes(search) ||
+        app.applicationNumber?.toLowerCase().includes(search) ||
+        app.applicantName?.toLowerCase().includes(search) ||
+        app.instrumentName?.toLowerCase().includes(search) ||
+        app.applicationType?.toLowerCase().includes(search) ||
+        app.assignedOfficerName?.toLowerCase().includes(search)
+      );
+    });
+  }, [sortedApps, activeStatusFilter, searchTerm]);
 
   const handleGenerateCert = async (appId) => {
     try {
@@ -168,20 +213,63 @@ export const ReviewApplicationsPage = () => {
         </p>
       </div>
 
+      {/* Category Filter Tabs */}
+      <div className="flex flex-wrap items-center gap-2">
+        {STATUS_TABS.map((tab) => {
+          const isActive = activeStatusFilter === tab.key;
+          const count = tabCounts[tab.key] || 0;
+          return (
+            <button
+              key={tab.key}
+              type="button"
+              onClick={() => {
+                if (tab.key === 'all') {
+                  searchParams.delete('status');
+                  setSearchParams(searchParams);
+                } else {
+                  setSearchParams({ status: tab.key });
+                }
+              }}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-bold transition-all flex items-center gap-2 ${
+                isActive
+                  ? 'bg-[#003943] text-white shadow-sm'
+                  : 'bg-white border border-[#003943]/15 text-[#003943]/80 hover:bg-[#003943]/5'
+              }`}
+            >
+              <span>{tab.label}</span>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-extrabold ${
+                isActive ? 'bg-white/20 text-white' : 'bg-neutral-100 text-neutral-600'
+              }`}>
+                {count}
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
       <Card className="p-4 bg-white">
-        <div className="relative max-w-md">
-          <Search className="w-4 h-4 text-neutral-600 absolute left-3 top-3" />
-          <input
-            type="text"
-            placeholder="Filter by App ID, Instrument, or Applicant..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-input border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
-          />
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+          <div className="relative flex-1 max-w-md">
+            <Search className="w-4 h-4 text-neutral-600 absolute left-3 top-3" />
+            <input
+              type="text"
+              placeholder="Filter by App ID, Instrument, or Applicant..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="w-full pl-9 pr-4 py-2 rounded-input border border-neutral-300 text-xs text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
+            />
+          </div>
+          <div className="text-xs text-neutral-600 font-medium">
+            Showing <span className="font-bold text-neutral-900">{filteredApps.length}</span> of <span className="font-bold text-neutral-900">{applications.length}</span> applications
+          </div>
         </div>
       </Card>
 
-      <Table columns={columns} data={pendingReviewApps} emptyMessage="No applications pending review." />
+      <Table
+        columns={columns}
+        data={filteredApps}
+        emptyMessage={`No ${activeStatusFilter === 'all' ? '' : activeStatusFilter.replace('_', ' ')} applications found.`}
+      />
 
       {/* Review Modal */}
       {selectedApp && (

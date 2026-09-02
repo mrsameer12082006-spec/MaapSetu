@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
-import { Search, Filter, Eye, Layers, FileText } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
+import { Search, Filter, Eye } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { Card } from '../../components/common/Card';
 import { Table } from '../../components/common/Table';
@@ -9,9 +10,28 @@ import { Button } from '../../components/common/Button';
 
 export const AllApplicationsPage = () => {
   const { applications } = useData();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const initialStatus = searchParams.get('status') || 'all';
   const [searchTerm, setSearchTerm] = useState('');
-  const [statusFilter, setStatusFilter] = useState('all');
+  const [statusFilter, setStatusFilter] = useState(initialStatus);
   const [selectedApp, setSelectedApp] = useState(null);
+
+  useEffect(() => {
+    const param = searchParams.get('status');
+    if (param && param !== statusFilter) {
+      setStatusFilter(param);
+    }
+  }, [searchParams]);
+
+  const handleStatusFilterChange = (newStatus) => {
+    setStatusFilter(newStatus);
+    if (newStatus === 'all') {
+      searchParams.delete('status');
+      setSearchParams(searchParams);
+    } else {
+      setSearchParams({ status: newStatus });
+    }
+  };
 
   const sortedApps = [...applications].sort((a, b) => new Date(b.submissionDate) - new Date(a.submissionDate) || a.id.localeCompare(b.id));
   const searchedApps = sortedApps.filter((app) => {
@@ -116,7 +136,7 @@ export const AllApplicationsPage = () => {
             <span className="text-xs text-neutral-600 font-semibold">Status:</span>
             <select
               value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value)}
+              onChange={(e) => handleStatusFilterChange(e.target.value)}
               className="rounded-input border border-neutral-300 text-xs py-2 px-3 bg-white text-neutral-900 focus:outline-none focus:ring-2 focus:ring-primary"
             >
               <option value="all">All ({getStatusCount('all')})</option>
@@ -135,7 +155,7 @@ export const AllApplicationsPage = () => {
           </p>
           {(searchTerm || statusFilter !== 'all') && (
             <button
-              onClick={() => { setSearchTerm(''); setStatusFilter('all'); }}
+              onClick={() => { setSearchTerm(''); handleStatusFilterChange('all'); }}
               className="text-xs font-semibold text-[#00959C] hover:underline"
             >
               Clear filters
@@ -164,12 +184,16 @@ export const AllApplicationsPage = () => {
             <div>
               <p className="font-semibold text-neutral-900 border-b pb-1 mb-2">Audit History</p>
               <div className="space-y-2 pl-2 border-l-2 border-primary">
-                {selectedApp.timeline.map((step, idx) => (
-                  <div key={idx} className="text-[11px]">
-                    <p className="font-semibold text-neutral-900">{step.step}</p>
-                    <p className="text-neutral-600">{step.date} • {step.actor}</p>
-                  </div>
-                ))}
+                {selectedApp.timeline && selectedApp.timeline.length > 0 ? (
+                  selectedApp.timeline.map((step, idx) => (
+                    <div key={idx} className="text-[11px]">
+                      <p className="font-semibold text-neutral-900">{step.step}</p>
+                      <p className="text-neutral-600">{step.date} • {step.actor}</p>
+                    </div>
+                  ))
+                ) : (
+                  <p className="text-neutral-500 italic">No legacy timeline steps recorded.</p>
+                )}
               </div>
             </div>
           </div>
@@ -178,10 +202,3 @@ export const AllApplicationsPage = () => {
     </div>
   );
 };
-
-
-
-
-
-
-

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import {
   ShieldCheck,
@@ -23,10 +23,15 @@ import {
 } from 'lucide-react';
 import { useData } from '../../context/DataContext';
 import { useAuth } from '../../context/AuthContext';
+import {
+  STATUS_CATEGORIES,
+  calculateLmdDashboardCounts,
+  getActionableLmdApplications
+} from '../../utils/statusClassification';
 
 export const LmdDashboard = () => {
   const { user } = useAuth();
-  const { applications, officers, certificates, assignOfficer, submitVerificationResult } = useData();
+  const { applications, loading: dataLoading, officers, certificates, assignOfficer, submitVerificationResult } = useData();
 
   // State for Review & Assignment Modal
   const [selectedApp, setSelectedApp] = useState(null);
@@ -45,20 +50,10 @@ export const LmdDashboard = () => {
   // State for Final Approval Modal
   const [reviewRecordApp, setReviewRecordApp] = useState(null);
 
-  // Compute Metrics Bar Counts as requested
-  const actionableApps = [...applications]
-    .filter(app => ['submitted', 'in_progress', 'assigned'].includes(app.status))
-    .sort((a, b) => new Date(b.submissionDate || b.created_at) - new Date(a.submissionDate || a.created_at))
-    .slice(0, 5);
-
-  const metrics = {
-    newApps: 12,
-    underReview: 7,
-    awaitingAssignment: 4,
-    scheduled: 9,
-    verification: 6,
-    completed: 84
-  };
+  // Dynamic Status Counts and Actionable Applications derived from canonical Supabase applications
+  const statusCounts = useMemo(() => calculateLmdDashboardCounts(applications), [applications]);
+  const actionableList = useMemo(() => getActionableLmdApplications(applications), [applications]);
+  const actionableApps = useMemo(() => actionableList.slice(0, 5), [actionableList]);
 
   // Automated Eligibility Route Rule Helper
   const getEligibleRoute = (instrumentName = '') => {
@@ -103,30 +98,75 @@ export const LmdDashboard = () => {
 
       {/* 2. MAIN METRICS BAR */}
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-[#003943]">{metrics.newApps}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">New</p>
-        </div>
+        {/* NEW */}
+        <Link
+          to="/lmd/review?status=new"
+          className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1 hover:border-[#00959C] hover:shadow-md transition-all cursor-pointer group block"
+          title="View New Applications"
+        >
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-[#003943] group-hover:text-[#00959C] transition-colors">
+            {dataLoading ? <span className="text-gray-300 animate-pulse">—</span> : statusCounts[STATUS_CATEGORIES.NEW]}
+          </p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider group-hover:text-[#003943]">
+            New
+          </p>
+        </Link>
 
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-cyan-700">{metrics.underReview}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">In Progress</p>
-        </div>
+        {/* IN PROGRESS */}
+        <Link
+          to="/lmd/review?status=in_progress"
+          className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1 hover:border-[#00959C] hover:shadow-md transition-all cursor-pointer group block"
+          title="View Applications In Progress"
+        >
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-cyan-700 group-hover:text-cyan-800 transition-colors">
+            {dataLoading ? <span className="text-gray-300 animate-pulse">—</span> : statusCounts[STATUS_CATEGORIES.IN_PROGRESS]}
+          </p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider group-hover:text-[#003943]">
+            In Progress
+          </p>
+        </Link>
 
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-[#00959C]">{metrics.awaitingAssignment}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Awaiting Assign</p>
-        </div>
+        {/* AWAITING ASSIGN */}
+        <Link
+          to="/lmd/review?status=awaiting_assignment"
+          className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1 hover:border-[#00959C] hover:shadow-md transition-all cursor-pointer group block"
+          title="View Applications Awaiting Verifier Assignment"
+        >
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-[#00959C] group-hover:text-[#007b80] transition-colors">
+            {dataLoading ? <span className="text-gray-300 animate-pulse">—</span> : statusCounts[STATUS_CATEGORIES.AWAITING_ASSIGN]}
+          </p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider group-hover:text-[#003943]">
+            Awaiting Assign
+          </p>
+        </Link>
 
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-cyan-700">{metrics.verification}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Verification</p>
-        </div>
+        {/* VERIFICATION */}
+        <Link
+          to="/lmd/review?status=verification"
+          className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1 hover:border-[#00959C] hover:shadow-md transition-all cursor-pointer group block"
+          title="View Applications Under Verification"
+        >
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-amber-700 group-hover:text-amber-800 transition-colors">
+            {dataLoading ? <span className="text-gray-300 animate-pulse">—</span> : statusCounts[STATUS_CATEGORIES.VERIFICATION]}
+          </p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider group-hover:text-[#003943]">
+            Verification
+          </p>
+        </Link>
 
-        <div className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1">
-          <p className="text-2xl sm:text-3xl font-serif font-bold text-emerald-700">{metrics.completed}</p>
-          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider">Completed</p>
-        </div>
+        {/* COMPLETED */}
+        <Link
+          to="/lmd/review?status=completed"
+          className="bg-white rounded-2xl p-4 border border-[#003943]/15 shadow-xs text-center space-y-1 hover:border-[#00959C] hover:shadow-md transition-all cursor-pointer group block"
+          title="View Completed Applications"
+        >
+          <p className="text-2xl sm:text-3xl font-serif font-bold text-emerald-700 group-hover:text-emerald-800 transition-colors">
+            {dataLoading ? <span className="text-gray-300 animate-pulse">—</span> : statusCounts[STATUS_CATEGORIES.COMPLETED]}
+          </p>
+          <p className="text-[11px] font-bold text-[#003943]/70 uppercase tracking-wider group-hover:text-[#003943]">
+            Completed
+          </p>
+        </Link>
       </div>
 
       {/* 3. CASE WORKFLOW PIPELINE: INCOMING APPLICATIONS QUEUE */}
@@ -142,7 +182,7 @@ export const LmdDashboard = () => {
           </div>
           <div className="flex items-center gap-3">
             <span className="px-3 py-1 rounded-full bg-[#E0F5F6] text-[#00959C] text-xs font-bold shrink-0">
-              {actionableApps.length} Shown
+              {dataLoading ? '...' : `${actionableList.length} Actionable`}
             </span>
             <Link to="/lmd/review" className="text-xs font-bold text-[#00959C] hover:underline">
               Review all &rarr;
@@ -151,8 +191,12 @@ export const LmdDashboard = () => {
         </div>
 
         <div className="space-y-4">
-          {actionableApps.length === 0 ? (
-            <div className="p-6 text-center text-[#003943]/60 text-sm font-semibold">No actionable cases pending.</div>
+          {dataLoading ? (
+            <div className="p-8 text-center text-[#003943]/60 text-sm font-semibold flex items-center justify-center gap-2">
+              <Clock className="w-4 h-4 animate-spin text-[#00959C]" /> Loading applications...
+            </div>
+          ) : actionableApps.length === 0 ? (
+            <div className="p-8 text-center text-[#003943]/60 text-sm font-semibold">No actionable cases pending.</div>
           ) : actionableApps.map((app) => {
             const eligibility = getEligibleRoute(app.instrumentName);
             const isAssigned = app.status === 'assigned' || app.status === 'in_progress';
