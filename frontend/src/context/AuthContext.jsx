@@ -9,22 +9,24 @@ export const USER_ROLES = {
   OFFICER: 'officer'
 };
 
+// ── Spinner shown while the auth session is being resolved ───────────────────
+const AuthLoadingScreen = () => (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#FDF9F6]">
+    <div className="flex flex-col items-center gap-3">
+      <div className="w-10 h-10 border-4 border-[#00959C] border-t-transparent rounded-full animate-spin" />
+      <p className="text-sm font-semibold text-[#003943]">Loading MaapSetu...</p>
+    </div>
+  </div>
+);
+
 export const AuthProvider = ({ children }) => {
   const [currentRole, setCurrentRole] = useState(null);
-  const [user, setUser] = useState(null);
-  const [session, setSession] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  // Tracks which user ID has already had its profile resolved synchronously
-  // (either by bootstrap or by loginAsRole). When onAuthStateChange fires
-  // for the same user, we skip the redundant DB round-trip.
-  const resolvedUserIdRef = useRef(null);
+  const [user, setUser]               = useState(null);
+  const [session, setSession]         = useState(null);
+  const [loading, setLoading]         = useState(true);
+  const bootstrapDone                 = useRef(false);
 
   // ── CORE: load (and if missing, auto-create) a user's profile ──────────────
-  // authUser = the object from supabase.auth (has .id, .email, .user_metadata)
-  // Self-healing: if the profile row is missing for any reason
-  // (RLS blocked insert during signup, or deleted in reset),
-  // we recreate it from auth user metadata.
   const loadUserProfile = async (authUser) => {
     if (!authUser?.id) return null;
 
@@ -37,19 +39,19 @@ export const AuthProvider = ({ children }) => {
 
       if (!error && profile) return profile;
 
+      // PGRST116 = row not found; auto-create from auth metadata
       if (error?.code === 'PGRST116' || !profile) {
-        // Profile row is missing. Auto-create it from auth user metadata.
         const meta = authUser.user_metadata || {};
         const role = meta.role || 'business';
 
         const profilePayload = {
-          id: authUser.id,
-          email: authUser.email?.toLowerCase().trim() ?? '',
-          name: meta.name?.trim() || authUser.email?.split('@')[0] || 'User',
-          phone: meta.phone?.trim() || null,
+          id:           authUser.id,
+          email:        authUser.email?.toLowerCase().trim() ?? '',
+          name:         meta.name?.trim() || authUser.email?.split('@')[0] || 'User',
+          phone:        meta.phone?.trim() || null,
           role,
           organization: meta.organization?.trim() || null,
-          is_active: true,
+          is_active:    true,
         };
 
         const { data: newProfile, error: upsertError } = await supabase
@@ -59,18 +61,18 @@ export const AuthProvider = ({ children }) => {
           .single();
 
         if (upsertError) {
-          console.warn('Profile auto-create failed (using in-memory fallback):', upsertError);
+          console.warn('[Auth] Profile auto-create failed (using in-memory fallback):', upsertError);
           return profilePayload;
         }
 
-        console.info('Profile auto-created successfully for:', authUser.email);
+        console.info('[Auth] Profile auto-created for:', authUser.email);
         return newProfile;
       }
 
-      console.error('Error fetching profile:', error);
+      console.error('[Auth] Error fetching profile:', error);
       return null;
     } catch (err) {
-      console.error('Unexpected error loading profile:', err);
+      console.error('[Auth] Unexpected error loading profile:', err);
       return null;
     }
   };
@@ -91,6 +93,15 @@ export const AuthProvider = ({ children }) => {
   useEffect(() => {
     let cancelled = false;
 
+    // Safety net: if bootstrap takes longer than 10 s (e.g. wrong API key / network down),
+    // unblock the app so the user at least sees the login page rather than a blank screen.
+    const timeout = setTimeout(() => {
+      if (!bootstrapDone.current && !cancelled) {
+        console.warn('[Auth] Bootstrap timed out — check VITE_SUPABASE_ANON_KEY in .env.local');
+        setLoading(false);
+      }
+    }, 10_000);
+
     const bootstrap = async () => {
       try {
         const { data: { session: existing } } = await supabase.auth.getSession();
@@ -99,14 +110,13 @@ export const AuthProvider = ({ children }) => {
         setSession(existing);
         if (existing?.user) {
           const profile = await loadUserProfile(existing.user);
-          if (!cancelled) {
-            applyProfile(existing.user, profile);
-            resolvedUserIdRef.current = existing.user.id;
-          }
+          if (!cancelled) applyProfile(existing.user, profile);
         }
       } catch (e) {
-        console.error('Auth bootstrap error:', e);
+        console.error('[Auth] Bootstrap error:', e);
       } finally {
+        bootstrapDone.current = true;
+        clearTimeout(timeout);
         if (!cancelled) setLoading(false);
       }
     };
@@ -119,27 +129,14 @@ export const AuthProvider = ({ children }) => {
       setSession(newSession);
 
       if (newSession?.user) {
-        const uid = newSession.user.id;
-
-        // If loginAsRole or bootstrap already fetched this user's profile,
-        // skip the duplicate DB round-trip. This eliminates the double-fetch
-        // that caused the loading spinner to flash a second time after login.
-        if (uid === resolvedUserIdRef.current) {
-          setLoading(false);
-          return;
-        }
-
         const profile = await loadUserProfile(newSession.user);
         if (!cancelled) {
           applyProfile(newSession.user, profile);
-          resolvedUserIdRef.current = uid;
           setLoading(false);
         }
       } else {
-        // Signed out
         setUser(null);
         setCurrentRole(null);
-        resolvedUserIdRef.current = null;
         localStorage.removeItem('maapsetu_role');
         if (!cancelled) setLoading(false);
       }
@@ -147,29 +144,54 @@ export const AuthProvider = ({ children }) => {
 
     return () => {
       cancelled = true;
+      clearTimeout(timeout);
       subscription.unsubscribe();
     };
   }, []);
 
-  // ── ACTIONS (SYNCHRONOUS STATE RESOLUTION) ────────────────────────────────────
-  // loginAsRole fully resolves profile and sets state BEFORE returning to prevent route race conditions
+  // ── HELPERS ──────────────────────────────────────────────────────────────────
+  // Classify Supabase errors into human-readable messages
+  const classifyError = (error) => {
+    const msg = error?.message?.toLowerCase() ?? '';
+    const code = error?.code ?? '';
+
+    if (msg.includes('invalid api key') || msg.includes('apikey') || msg.includes('jwt')) {
+      return 'Supabase API key is missing or invalid. Set VITE_SUPABASE_ANON_KEY in your .env.local file (get it from Supabase Dashboard → Project Settings → API).';
+    }
+    if (msg.includes('invalid login credentials') || msg.includes('invalid email or password') || code === 'invalid_credentials') {
+      return 'Incorrect email or password. Please try again.';
+    }
+    if (msg.includes('email not confirmed')) {
+      return 'Please confirm your email address before signing in. Check your inbox for a verification link.';
+    }
+    if (msg.includes('already registered') || msg.includes('user already exists')) {
+      return 'An account with this email already exists. Please sign in instead.';
+    }
+    if (msg.includes('rate limit') || code === 'over_email_send_rate_limit') {
+      return 'Too many requests. Please wait a moment and try again. (Tip: disable "Confirm email" in Supabase Dashboard → Auth → Providers → Email to avoid this during development.)';
+    }
+    if (msg.includes('network') || msg.includes('fetch')) {
+      return 'Network error — check your internet connection and try again.';
+    }
+    return error?.message || 'An unexpected error occurred. Please try again.';
+  };
+
+  // ── ACTIONS ──────────────────────────────────────────────────────────────────
   const loginAsRole = async (email, password) => {
+    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) throw error;
+      if (error) throw new Error(classifyError(error));
 
       setSession(data.session);
       let profile = null;
       if (data.user) {
         profile = await loadUserProfile(data.user);
         applyProfile(data.user, profile);
-        // Mark this user resolved so the onAuthStateChange listener that
-        // fires ~100ms after signIn skips the redundant profile fetch.
-        resolvedUserIdRef.current = data.user.id;
       }
       return { ...data, profile };
-    } catch (err) {
-      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -177,53 +199,38 @@ export const AuthProvider = ({ children }) => {
     if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
     if (!email || !email.includes('@')) throw new Error('A valid email address is required.');
 
+    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
           data: {
-            name: profileData.name?.trim() || '',
-            phone: profileData.phone?.trim() || null,
-            role: 'business',
+            name:         profileData.name?.trim() || '',
+            phone:        profileData.phone?.trim() || null,
+            role:         'business',
             organization: profileData.organization?.trim() || null,
           }
         }
       });
 
-      if (error) {
-        if (
-          error.message?.toLowerCase().includes('already registered') ||
-          error.message?.toLowerCase().includes('user already exists')
-        ) {
-          throw new Error('An account with this email already exists. Please sign in instead.');
-        }
-        if (
-          error.message?.toLowerCase().includes('rate limit') ||
-          error.code === 'over_email_send_rate_limit'
-        ) {
-          throw new Error(
-            'Supabase email confirmation rate limit reached (free tier allows ~3 emails/hour). In Supabase Dashboard -> Authentication -> Providers -> Email, turn OFF "Confirm email" to allow instant signups without sending confirmation emails.'
-          );
-        }
-        throw error;
-      }
+      if (error) throw new Error(classifyError(error));
 
       let profile = null;
       if (data?.user) {
         const profilePayload = {
-          id: data.user.id,
-          email: email.toLowerCase().trim(),
-          name: profileData.name?.trim() || '',
-          phone: profileData.phone?.trim() || null,
-          role: 'business',
+          id:           data.user.id,
+          email:        email.toLowerCase().trim(),
+          name:         profileData.name?.trim() || '',
+          phone:        profileData.phone?.trim() || null,
+          role:         'business',
           organization: profileData.organization?.trim() || null,
-          is_active: true,
+          is_active:    true,
         };
 
-        // Only upsert to DB if we have an active session (email confirmation off).
-        // If confirmation is required, session is null — the profile will be
-        // auto-created from metadata on first login via loadUserProfile().
+        // Only insert if we have an immediate session (email confirmation OFF).
+        // If confirmation is ON, session is null here — the profile will be
+        // auto-created on first login via loadUserProfile().
         if (data.session) {
           const { data: savedProfile } = await supabase
             .from('profiles')
@@ -234,20 +241,18 @@ export const AuthProvider = ({ children }) => {
           profile = savedProfile || profilePayload;
           setSession(data.session);
           applyProfile(data.user, profile);
-          resolvedUserIdRef.current = data.user.id;
         } else {
           profile = profilePayload;
         }
       }
 
       return { ...data, profile };
-    } catch (err) {
-      throw err;
+    } finally {
+      setLoading(false);
     }
   };
 
   const logout = async () => {
-    resolvedUserIdRef.current = null;
     await supabase.auth.signOut();
     setUser(null);
     setCurrentRole(null);
@@ -255,12 +260,11 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('maapsetu_role');
   };
 
-  // ── CONTEXT VALUE ────────────────────────────────────────────────────────────
-  // CRITICAL: Always render children — never gate the app tree on `loading`.
-  // Gating with `{!loading && children}` was unmounting/remounting the entire
-  // React tree each time loading toggled (button click → auth event → done),
-  // which caused the blank white screen between login attempts.
-  // ProtectedRoute handles the spinner inline using the `loading` flag.
+  // ── RENDER ───────────────────────────────────────────────────────────────────
+  // Show a full-screen spinner during the initial session check so the rest of
+  // the app (which depends on auth state) doesn't render prematurely.
+  if (loading) return <AuthLoadingScreen />;
+
   return (
     <AuthContext.Provider value={{ currentRole, user, session, loading, loginAsRole, registerUser, logout, USER_ROLES }}>
       {children}

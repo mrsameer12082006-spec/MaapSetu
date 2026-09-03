@@ -1,14 +1,10 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize the Supabase client
-// Supports both VITE_SUPABASE_PUBLISHABLE_KEY and legacy VITE_SUPABASE_ANON_KEY
-const supabaseUrl = import.meta.env.VITE_SUPABASE_URL || 'https://yrzhtrzelayycrnvmcup.supabase.co';
-const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY || import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseKey = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
 
-if (!supabaseKey) {
-  console.warn(
-    '[MaapSetu] Supabase API key is missing. Ensure frontend/.env.local contains VITE_SUPABASE_PUBLISHABLE_KEY (see frontend/.env.example).'
-  );
+if (!supabaseUrl || !supabaseKey) {
+  console.error('[Supabase] VITE_SUPABASE_URL or VITE_SUPABASE_PUBLISHABLE_KEY is missing from .env.local');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey || '');
+export const supabase = createClient(supabaseUrl, supabaseKey);
