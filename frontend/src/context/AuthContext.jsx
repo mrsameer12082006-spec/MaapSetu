@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 import { supabase } from '../services/supabase';
 
 const AuthContext = createContext();
@@ -14,6 +14,11 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [session, setSession] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  // Tracks which user ID has already had its profile resolved synchronously
+  // (either by bootstrap or by loginAsRole). When onAuthStateChange fires
+  // for the same user, we skip the redundant DB round-trip.
+  const resolvedUserIdRef = useRef(null);
 
   // ── CORE: load (and if missing, auto-create) a user's profile ──────────────
   // authUser = the object from supabase.auth (has .id, .email, .user_metadata)
@@ -94,7 +99,10 @@ export const AuthProvider = ({ children }) => {
         setSession(existing);
         if (existing?.user) {
           const profile = await loadUserProfile(existing.user);
-          if (!cancelled) applyProfile(existing.user, profile);
+          if (!cancelled) {
+            applyProfile(existing.user, profile);
+            resolvedUserIdRef.current = existing.user.id;
+          }
         }
       } catch (e) {
         console.error('Auth bootstrap error:', e);
@@ -111,14 +119,27 @@ export const AuthProvider = ({ children }) => {
       setSession(newSession);
 
       if (newSession?.user) {
+        const uid = newSession.user.id;
+
+        // If loginAsRole or bootstrap already fetched this user's profile,
+        // skip the duplicate DB round-trip. This eliminates the double-fetch
+        // that caused the loading spinner to flash a second time after login.
+        if (uid === resolvedUserIdRef.current) {
+          setLoading(false);
+          return;
+        }
+
         const profile = await loadUserProfile(newSession.user);
         if (!cancelled) {
           applyProfile(newSession.user, profile);
+          resolvedUserIdRef.current = uid;
           setLoading(false);
         }
       } else {
+        // Signed out
         setUser(null);
         setCurrentRole(null);
+        resolvedUserIdRef.current = null;
         localStorage.removeItem('maapsetu_role');
         if (!cancelled) setLoading(false);
       }
@@ -133,7 +154,6 @@ export const AuthProvider = ({ children }) => {
   // ── ACTIONS (SYNCHRONOUS STATE RESOLUTION) ────────────────────────────────────
   // loginAsRole fully resolves profile and sets state BEFORE returning to prevent route race conditions
   const loginAsRole = async (email, password) => {
-    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signInWithPassword({ email, password });
       if (error) throw error;
@@ -143,10 +163,13 @@ export const AuthProvider = ({ children }) => {
       if (data.user) {
         profile = await loadUserProfile(data.user);
         applyProfile(data.user, profile);
+        // Mark this user resolved so the onAuthStateChange listener that
+        // fires ~100ms after signIn skips the redundant profile fetch.
+        resolvedUserIdRef.current = data.user.id;
       }
       return { ...data, profile };
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      throw err;
     }
   };
 
@@ -154,7 +177,6 @@ export const AuthProvider = ({ children }) => {
     if (!password || password.length < 6) throw new Error('Password must be at least 6 characters.');
     if (!email || !email.includes('@')) throw new Error('A valid email address is required.');
 
-    setLoading(true);
     try {
       const { data, error } = await supabase.auth.signUp({
         email,
@@ -199,10 +221,9 @@ export const AuthProvider = ({ children }) => {
           is_active: true,
         };
 
-        // ONLY attempt profile insert if we have an active authenticated session.
-        // If email confirmation is required, session is null, so an unauthenticated call
-        // would fail with 42501 RLS error. The profile is safely persisted in auth metadata
-        // and will be created seamlessly on first login via loadUserProfile().
+        // Only upsert to DB if we have an active session (email confirmation off).
+        // If confirmation is required, session is null — the profile will be
+        // auto-created from metadata on first login via loadUserProfile().
         if (data.session) {
           const { data: savedProfile } = await supabase
             .from('profiles')
@@ -213,18 +234,20 @@ export const AuthProvider = ({ children }) => {
           profile = savedProfile || profilePayload;
           setSession(data.session);
           applyProfile(data.user, profile);
+          resolvedUserIdRef.current = data.user.id;
         } else {
           profile = profilePayload;
         }
       }
 
       return { ...data, profile };
-    } finally {
-      setLoading(false);
+    } catch (err) {
+      throw err;
     }
   };
 
   const logout = async () => {
+    resolvedUserIdRef.current = null;
     await supabase.auth.signOut();
     setUser(null);
     setCurrentRole(null);
@@ -233,9 +256,14 @@ export const AuthProvider = ({ children }) => {
   };
 
   // ── CONTEXT VALUE ────────────────────────────────────────────────────────────
+  // CRITICAL: Always render children — never gate the app tree on `loading`.
+  // Gating with `{!loading && children}` was unmounting/remounting the entire
+  // React tree each time loading toggled (button click → auth event → done),
+  // which caused the blank white screen between login attempts.
+  // ProtectedRoute handles the spinner inline using the `loading` flag.
   return (
     <AuthContext.Provider value={{ currentRole, user, session, loading, loginAsRole, registerUser, logout, USER_ROLES }}>
-      {!loading && children}
+      {children}
     </AuthContext.Provider>
   );
 };
